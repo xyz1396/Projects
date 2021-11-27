@@ -32,8 +32,8 @@
 *.app
 
 # For cmake
-*/build/*
-*/bin/*
+build/
+bin/
 
 # For R
 .Rproj.user
@@ -58,4 +58,8 @@
 *.xml
 *.binary
 *.raw
+*.ms2
 *.DS_Store
+SiprosDoc/
+*.log
+

@@ -1,0 +1,26 @@
+#! /bin/sh
+case $1 in
+    "clean")  
+        rm -rf build
+        mkdir build
+        rm -rf bin
+        mkdir bin
+        ;;
+    "build") 
+        cd build 
+        cmake ..
+        make -j6
+        ;;
+    "make") 
+        cd build 
+        make
+        ;;
+    "run")
+        cd bin 
+        ./SiprosV3omp
+        ./SiprosV3mpi
+        ;;
+    *)  
+        ./make "build"
+    ;;
+esac

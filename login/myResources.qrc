@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/myImages">
+        <file>icon/biaoqian.png</file>
+        <file>icon/huodong.png</file>
+        <file>icon/kabao.png</file>
+        <file>icon/pinglun.png</file>
+        <file>icon/shouye.png</file>
+        <file>icon/sousuo.png</file>
+        <file>icon/xianshi.png</file>
+        <file>icon/xihuan.png</file>
+        <file>icon/xinxi.png</file>
+        <file>icon/打开.png</file>
+    </qresource>
+</RCC>

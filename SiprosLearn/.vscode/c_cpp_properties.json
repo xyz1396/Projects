@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            // 配置的名称，可以添加多个在编辑器右下角切换
+            "name": "MinGW G++",
+            "intelliSenseMode": "gcc-x64",
+            // 这里的编译器路径，包括下面的一些选项都只是
+            // 给 IntelliSense 用的，和具体项目构建没关系
+            "compilerPath": "/usr/bin/mpic++",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/lib/**"
+            ],
+            "defines": [
+                "GCC",
+                "__LINUX__",
+                "_FILE_OFFSET_BITS=64"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}

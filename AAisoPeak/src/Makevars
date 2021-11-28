@@ -1,0 +1,17 @@
+# Default make file
+PKG_CPPFLAGS=-I.
+PKG_LIBS=$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
+# Include all C++ files in src/ and its subdirectories: src/A and src/B 
+LIB=$(wildcard lib/*.cpp)
+SOURCES=getISOpeak.cpp test.cpp RcppExports.cpp $(LIB)
+
+# Obtain the object files
+OBJECTS=$(SOURCES:.cpp=.o)
+
+# Make the shared object
+all: $(SHLIB)
+
+# Provide recipe to remove all objects
+clean:
+	@rm -f $(OBJECTS)

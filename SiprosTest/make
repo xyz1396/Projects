@@ -1,0 +1,37 @@
+#! /bin/sh
+case $1 in
+    "clean")  
+        rm -rf build
+        mkdir build
+        rm -rf bin
+        mkdir bin
+        ;;
+    "build") 
+        cd build 
+        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+        make -j6
+        ;;
+    "release")
+        cd build 
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+        make -j6
+        ;;
+    "make") 
+        cd build 
+        make
+        ;;
+    "run")
+        cd bin 
+        ./Sipros
+        ;;
+    "test")
+        cd bin/test 
+        for name in `ls`
+            do
+                ./$name
+            done
+        ;;
+    *)  
+        ./make "build"
+    ;;
+esac

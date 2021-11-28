@@ -1,0 +1,50 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "compile",
+            "type": "shell",
+            // 拼装编译命令（以 g++ 为例）
+            "command": "mpic++",
+            "args": [
+                "-g",
+                "-std=c++11",
+                "-o",
+                "build/${workspaceFolderBasename}",
+                "src/*.cpp",
+                "src/Scores/*.cpp",
+                "-Llib/",
+                "-lmstoolkitlite",
+                "-Isrc/MSToolkit/include/",
+                "-D",
+                "GCC",
+                "-D",
+                "_FILE_OFFSET_BITS=64",
+                "-fpermissive",
+                "-fopenmp",
+                "-O3",
+                "-no-pie"
+            ],
+            "options": {
+                // 在这个目录里执行编译命令
+                "cwd": "${workspaceFolder}",
+                // "shell": {
+                //     // 在 PowerShell 里执行命令，否则无法识别 *.cpp
+                //     "executable": "powershell.exe"
+                // }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "echo": true
+            },
+            // 从编译器的输出里提取 WARNING、ERROR 等信息
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

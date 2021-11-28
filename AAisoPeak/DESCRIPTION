@@ -1,0 +1,18 @@
+Package: AAisoPeak
+Title: Generating isotopic peak of amino acid sequence
+Version: 0.1
+Authors@R: person("Yi", "Xiong", email = "xiongyibear@outlook.com", role = c("aut", "cre"))
+Description: Generating isotopic peak of amino acid sequence by rcpp
+Depends: R (>= 3.4.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+ByteCompile: TRUE
+Suggests: testthat
+RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)
+LinkingTo: 
+    Rcpp
+Imports: 
+    Rcpp
+SystemRequirements: C++11

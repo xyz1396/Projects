@@ -62,4 +62,9 @@ bin/
 *.DS_Store
 SiprosDoc/
 *.log
+learnSipros/SIP/
+*.sip
+*.FT2
+*.cfg
+*.tab
 

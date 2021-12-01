@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --partition=omicsbio
+#SBATCH --ntasks=60
+#SBATCH --time=999:00:00
+#SBATCH --job-name=MSlabel98
+#SBATCH --mem=150G
+#SBATCH --chdir=/scratch/yixiong/learnSipros/test/AMD/siprosV3
+#SBATCH --output=MSlabel98Out_stdout.txt
+#SBATCH --error=MSlabel98Out_stderr.txt
+#SBATCH --mail-user=yixiong@ou.edu
+#SBATCH --mail-type=ALL
+
+cd /scratch/yixiong/learnSipros/test/AMD/siprosV3
+./siprosV3 \
+  -g configFiles \
+  -w ../MSlabel98 \
+  -o MSlabel98Out

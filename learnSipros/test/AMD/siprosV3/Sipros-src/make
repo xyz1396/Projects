@@ -4,6 +4,8 @@ module load \
     OpenMPI/3.1.4-GCC-8.3.0 \
     gperftools/2.7.90-GCCcore-8.3.0
 case $1 in
+    "load")
+        ;;
     "clean")  
         rm -rf build
         mkdir build

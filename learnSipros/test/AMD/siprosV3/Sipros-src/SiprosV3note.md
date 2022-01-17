@@ -310,6 +310,11 @@ time ./SiprosV3ompReserve -c SiproConfig.N15_0Pct.cfg -f AMD_DynamicSIP_SampleD_
 # user    44m6.703s
 # sys     0m5.787s
 time ./SiprosV3ompNoReserve -c SiproConfig.N15_0Pct.cfg -f AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2 -s
+
+# real    2m21.062s
+# user    37m33.068s
+# sys     0m6.460s
+time ./SiprosV3ompArray -c SiproConfig.N15_0Pct.cfg -f AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2 -s
 ```
 
 # Filter

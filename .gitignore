@@ -50,6 +50,7 @@ timeCompare/
 *.tgz
 *.zip
 *.txt
+!CMakeLists.txt
 *.xlsx
 *.fna
 *.fasta

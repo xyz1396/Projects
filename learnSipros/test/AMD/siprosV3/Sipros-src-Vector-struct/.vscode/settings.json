@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.rmd": "markdown",
+        "string": "cpp",
+        "cstdlib": "cpp",
+        "iostream": "cpp",
+        "new": "cpp",
+        "ostream": "cpp"
+    },
+    "cmake.ctestPath": ""
+}

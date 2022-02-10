@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class Peptide
+class alignas(64) Peptide
 {
     // the sequence of the peptide
     string sPeptide;
@@ -22,7 +22,7 @@ class Peptide
     int ibeginPos;
     // the mass of the whole peptide
     double dPeptideMass;
-    // score if it is in weightsum vector, the score is weightsum score, so do Xorr, Ranksome, and others. 
+    // score if it is in weightsum vector, the score is weightsum score, so do Xorr, Ranksome, and others.
     double dscore;
     // the length of the peptide
     int iPeptideLength;
@@ -34,55 +34,50 @@ class Peptide
     char cOriginalPrefix;
     // suffix residue of original peptide,  or "-"
     char cOriginalSuffix;
-    
-    
+
 public:
-  
     // Low-res MS2 scan just need
     // the most abundant isotopic masses of predicted Y and B ions of the peptide
     vector<double> vdYionMasses;
     vector<double> vdBionMasses;
-    
-    
+
     // High-res MS2 scan need
     // the full isotopic distribution of predicted Y and B ions of the peptide
-    vector< vector<double> > vvdYionMass;
-    vector< vector<double> > vvdYionProb;    
-    vector< vector<double> > vvdBionMass;
-    vector< vector<double> > vvdBionProb;
-
+    vector<vector<double>> vvdYionMass;
+    vector<vector<double>> vvdYionProb;
+    vector<vector<double>> vvdBionMass;
+    vector<vector<double>> vvdBionProb;
 
     Peptide();
     ~Peptide();
-    
-    void setPeptide(const string & sPeptide, const string & sOriginalPeptide,
-	  const string & sProteinName, const int & ibeginPos, 
-	  const double & dPeptideMass, const char & cIdentifyPrefix, const char & cIdentifySuffix,
-	  const char & cOriginalPrefix, const char & cOriginalSuffix);
-    string getPeptideSeq() const  {return sPeptide;};
-    string getOriginalPeptideSeq() const {return sOriginalPeptide;};
-    string getProteinName() const {return sProteinName;};
-    int    getBeginPosProtein()  const  {return ibeginPos;};
-    double getPeptideMass() const  {return dPeptideMass;};
-    double getPeptideScore() const  {return dscore;};
-    int    getPeptideLength() const  {return iPeptideLength;};
-    char   getIdentifyPrefix() const {return cIdentifyPrefix;};
-    char   getIdentifySuffix() const {return cIdentifySuffix;};
-    char   getOriginalPrefix() const {return cOriginalPrefix;};
-    char   getOriginalSuffix() const {return cOriginalSuffix;};
-    
-    
-    void setPeptideScore(double dscore) {this->dscore = dscore;};
-    
+
+    void setPeptide(const string &sPeptide, const string &sOriginalPeptide,
+                    const string &sProteinName, const int &ibeginPos,
+                    const double &dPeptideMass, const char &cIdentifyPrefix, const char &cIdentifySuffix,
+                    const char &cOriginalPrefix, const char &cOriginalSuffix);
+    string getPeptideSeq() const { return sPeptide; };
+    string getOriginalPeptideSeq() const { return sOriginalPeptide; };
+    string getProteinName() const { return sProteinName; };
+    int getBeginPosProtein() const { return ibeginPos; };
+    double getPeptideMass() const { return dPeptideMass; };
+    double getPeptideScore() const { return dscore; };
+    int getPeptideLength() const { return iPeptideLength; };
+    char getIdentifyPrefix() const { return cIdentifyPrefix; };
+    char getIdentifySuffix() const { return cIdentifySuffix; };
+    char getOriginalPrefix() const { return cOriginalPrefix; };
+    char getOriginalSuffix() const { return cOriginalSuffix; };
+
+    void setPeptideScore(double dscore) { this->dscore = dscore; };
+
     // calculate all expected y and b ions from sPeptide
-    void calculateExpectedFragments(const string & sNewPeptide, const map<char, double> & mapResidueMass);
-    
-    void preprocessing(bool isMS2HighRes, const map<char, double> & mapResidueMass);
+    void calculateExpectedFragments(const string &sNewPeptide, const map<char, double> &mapResidueMass);
+
+    void preprocessing(bool isMS2HighRes, const map<char, double> &mapResidueMass);
 
     // this function doesn't need mapResidueMass as input
-    void calculateIsotope(const string & sNewPeptide, const map<char, double> & mapResidueMass);
-    
-    string neutralLossProcess(const string & sCurrentPeptide);
+    void calculateIsotope(const string &sNewPeptide, const map<char, double> &mapResidueMass);
+
+    string neutralLossProcess(const string &sCurrentPeptide);
 };
 
 #endif // PEPTIDE_H

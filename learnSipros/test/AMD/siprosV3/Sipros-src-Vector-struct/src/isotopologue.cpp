@@ -1,111 +1,46 @@
 #include "isotopologue.h"
 
-IsotopeDistribution::IsotopeDistribution() : aSize(0), massArray(nullptr), probArray(nullptr)
+IsotopeDistribution::IsotopeDistribution()
 {
-}
-
-IsotopeDistribution::IsotopeDistribution(const IsotopeDistribution &mIsotopeDistribution)
-	: aSize(mIsotopeDistribution.aSize), massArray(new float[aSize]), probArray(new float[aSize])
-{
-	copy(mIsotopeDistribution.massArray, mIsotopeDistribution.massArray + aSize, massArray);
-	copy(mIsotopeDistribution.probArray, mIsotopeDistribution.probArray + aSize, probArray);
-}
-
-// move constructor
-IsotopeDistribution::IsotopeDistribution(IsotopeDistribution &&mIsotopeDistribution)
-	: aSize(mIsotopeDistribution.aSize), massArray(mIsotopeDistribution.massArray), probArray(mIsotopeDistribution.probArray)
-{
-	mIsotopeDistribution.aSize = 0;
-	mIsotopeDistribution.massArray = nullptr;
-	mIsotopeDistribution.probArray = nullptr;
 }
 
 IsotopeDistribution::IsotopeDistribution(const vector<double> &vItsMass, const vector<double> &vItsProb)
-	: aSize(vItsMass.size()), massArray(new float[aSize]), probArray(new float[aSize])
+	: vMass(vItsMass), vProb(vItsProb)
 {
-	copy(vItsMass.begin(), vItsMass.end(), massArray);
-	copy(vItsProb.begin(), vItsProb.end(), probArray);
-}
-
-IsotopeDistribution::IsotopeDistribution(size_t vItsSize) : aSize(vItsSize),
-															massArray(new float[vItsSize]),
-															probArray(new float[vItsSize]) {}
-
-IsotopeDistribution &IsotopeDistribution::operator=(const IsotopeDistribution &mIsotopeDistribution)
-{
-	if (this == &mIsotopeDistribution)
-		return *this;
-	aSize = mIsotopeDistribution.aSize;
-	massArray = (float *)std::realloc(massArray, aSize * sizeof(float));
-	probArray = (float *)std::realloc(probArray, aSize * sizeof(float));
-	copy(mIsotopeDistribution.massArray, mIsotopeDistribution.massArray + aSize, massArray);
-	copy(mIsotopeDistribution.probArray, mIsotopeDistribution.probArray + aSize, probArray);
-	return *this;
-}
-
-// move assignment operator
-IsotopeDistribution &IsotopeDistribution::operator=(IsotopeDistribution &&mIsotopeDistribution)
-{
-	if (this == &mIsotopeDistribution)
-		return *this;
-	this->~IsotopeDistribution();
-	new (this) IsotopeDistribution(move(mIsotopeDistribution));
-	return *this;
-	// if (this != &mIsotopeDistribution)
-	// {
-	// 	delete[] massArray;
-	// 	delete[] probArray;
-	// 	aSize = mIsotopeDistribution.aSize;
-	// 	massArray = mIsotopeDistribution.massArray;
-	// 	probArray = mIsotopeDistribution.probArray;
-	// 	mIsotopeDistribution.aSize = 0;
-	// 	mIsotopeDistribution.massArray = nullptr;
-	// 	mIsotopeDistribution.probArray = nullptr;
-	// }
-	// return *this;
-}
-
-IsotopeDistribution::~IsotopeDistribution()
-{
-	aSize = 0;
-	delete[] massArray;
-	delete[] probArray;
 }
 
 void IsotopeDistribution::print()
 {
 	cout << "Mass " << '\t' << "Inten" << endl;
-	for (size_t i = 0; i < aSize; i++)
+	for (unsigned int i = 0; i < vMass.size(); i++)
 	{
-		cout << setprecision(8) << massArray[i] << '\t' << probArray[i] << endl;
+		cout << setprecision(8) << vMass[i] << '\t' << vProb[i] << endl;
 	}
 }
 
-float IsotopeDistribution::getMostAbundantMass()
+double IsotopeDistribution::getMostAbundantMass()
 {
-	float dMaxProb = 0;
-	float dMass = 0;
-	#pragma omp simd
-	for (size_t i = 0; i < aSize; ++i)
+	double dMaxProb = 0;
+	double dMass = 0;
+	for (unsigned int i = 0; i < vMass.size(); ++i)
 	{
-		if (dMaxProb < probArray[i])
+		if (dMaxProb < vProb[i])
 		{
-			dMaxProb = probArray[i];
-			dMass = massArray[i];
+			dMaxProb = vProb[i];
+			dMass = vMass[i];
 		}
 	}
 	return dMass;
 }
 
-float IsotopeDistribution::getAverageMass()
+double IsotopeDistribution::getAverageMass()
 {
-	float dSumProb = 0;
-	float dSumMass = 0;
-	#pragma omp simd
-	for (size_t i = 0; i < aSize; ++i)
+	double dSumProb = 0;
+	double dSumMass = 0;
+	for (unsigned int i = 0; i < vMass.size(); ++i)
 	{
-		dSumProb = dSumProb + probArray[i];
-		dSumMass = dSumMass + probArray[i] * massArray[i];
+		dSumProb = dSumProb + vProb[i];
+		dSumMass = dSumMass + vProb[i] * vMass[i];
 	}
 
 	if (dSumProb <= 0)
@@ -114,65 +49,25 @@ float IsotopeDistribution::getAverageMass()
 	return (dSumMass / dSumProb);
 }
 
-void IsotopeDistribution::filterProbCutoff(float dProbCutoff)
+void IsotopeDistribution::filterProbCutoff(double dProbCutoff)
 {
-	size_t iteBegin = 0;
-	while (iteBegin != aSize)
+	vector<double> vMassCopy = vMass;
+	vector<double> vProbCopy = vProb;
+	vMass.clear();
+	vProb.clear();
+	for (unsigned int i = 0; i < vProbCopy.size(); ++i)
 	{
-		if (probArray[iteBegin] > dProbCutoff)
+		if (vProbCopy[i] >= dProbCutoff)
 		{
-			break;
+			vMass.push_back(vMassCopy[i]);
+			vProb.push_back(vProbCopy[i]);
 		}
-		iteBegin++;
-	}
-
-	size_t iteEnd = aSize;
-	while (iteEnd != 0)
-	{
-		if (probArray[iteEnd - 1] > dProbCutoff)
-		{
-			break;
-		}
-		iteEnd--;
-	}
-	if (iteBegin != 0 || iteEnd != aSize)
-	{
-		aSize = iteEnd - iteBegin;
-		float *massArrayNew = new float[aSize];
-		float *probArrayNew = new float[aSize];
-		copy(massArray + iteBegin, massArray + iteEnd, massArrayNew);
-		copy(probArray + iteBegin, probArray + iteEnd, probArrayNew);
-		delete[] massArray;
-		delete[] probArray;
-		massArray = massArrayNew;
-		probArray = probArrayNew;
 	}
 }
 
-void IsotopeDistribution::normalize()
+double IsotopeDistribution::getLowestMass()
 {
-	float sumProb = 0;
-#pragma omp simd
-	for (size_t i = 0; i < aSize; ++i)
-	{
-		sumProb += probArray[i];
-	}
-
-	if (sumProb <= 0)
-	{
-		cerr << "Error: Sum of distribution is zero" << endl;
-		exit(1);
-	}
-#pragma omp simd
-	for (size_t i = 0; i < aSize; ++i)
-	{
-		probArray[i] = probArray[i] / sumProb;
-	}
-}
-
-float IsotopeDistribution::getLowestMass()
-{
-	return *min_element(massArray, massArray + aSize);
+	return *min_element(vMass.begin(), vMass.end());
 }
 
 Isotopologue::Isotopologue() : MassPrecision(0.01), ProbabilityCutoff(0.000000001)
@@ -192,9 +87,9 @@ bool Isotopologue::setupIsotopologue(const string &sTable, const string &AtomNam
 
 	istringstream issStream(sTable);
 	string sResidue;
-	vector<size_t> viAtomVector;
-	size_t iNumber;
-	size_t i;
+	vector<int> viAtomVector;
+	int iNumber;
+	unsigned int i;
 
 	// parse out the RESIDUE_ATOMIC_COMPOSITION table
 	while (!(issStream.eof()))
@@ -246,11 +141,12 @@ bool Isotopologue::setupIsotopologue(const string &sTable, const string &AtomNam
 			cerr << "ERROR: cannot retrieve isotopic composition for atom " << AtomName[i] << " from ProNovoConfig" << endl;
 			return false;
 		}
-		vAtomIsotopicDistribution[i] = IsotopeDistribution(vdMassTemp, vdNaturalCompositionTemp);
+		vAtomIsotopicDistribution[i].vMass = vdMassTemp;
+		vAtomIsotopicDistribution[i].vProb = vdNaturalCompositionTemp;
 	}
 
 	// calculate Isotopic distribution for all residues
-	map<string, vector<size_t>>::iterator ResidueIter;
+	map<string, vector<int>>::iterator ResidueIter;
 	IsotopeDistribution tempIsotopeDistribution;
 	for (ResidueIter = mResidueAtomicComposition.begin(); ResidueIter != mResidueAtomicComposition.end(); ResidueIter++)
 	{
@@ -333,11 +229,11 @@ bool Isotopologue::getSingleResidueMostAbundantMasses(vector<string> &vsResidues
 		}
 	}
 
-	size_t i;
+	unsigned int i;
 
 	// bubble sort the list by mass
-	size_t n = vsResidues.size();
-	size_t pass;
+	unsigned int n = vsResidues.size();
+	unsigned int pass;
 	double dCurrentMass;
 	for (pass = 1; pass < n; pass++)
 	{ // count how many times
@@ -393,7 +289,7 @@ bool Isotopologue::computeIsotopicDistribution(string sSequence, IsotopeDistribu
 	}
 
 	// add up all residues's isotopic distribution
-	for (size_t j = 0; j < sSequence.length(); j++)
+	for (unsigned int j = 0; j < sSequence.length(); j++)
 	{
 		string currentResidue = sSequence.substr(j, 1);
 		ResidueIter = vResidueIsotopicDistribution.find(currentResidue);
@@ -422,7 +318,7 @@ bool Isotopologue::computeProductIon(string sSequence,
 {
 	// get the mass for a proton
 	double dProtonMass = ProNovoConfig::getProtonMass();
-	size_t i = 0;
+	unsigned int i = 0;
 
 	//	if(!isalpha(sSequence[0]))
 	//	{
@@ -430,7 +326,7 @@ bool Isotopologue::computeProductIon(string sSequence,
 	//		return false;
 	//	}
 
-	size_t iPeptideLength = 0;
+	int iPeptideLength = 0;
 	for (i = 0; i < sSequence.length(); ++i)
 	{
 		if (isalpha(sSequence[i]))
@@ -460,6 +356,7 @@ bool Isotopologue::computeProductIon(string sSequence,
 	map<string, IsotopeDistribution>::iterator ResidueIter;
 
 	vector<IsotopeDistribution> vResidueDistribution;
+	vResidueDistribution.reserve(iPeptideLength + 2);
 	IsotopeDistribution sumDistribution;
 	IsotopeDistribution currentDistribution;
 
@@ -472,7 +369,7 @@ bool Isotopologue::computeProductIon(string sSequence,
 		return false;
 	}
 
-	size_t iStartResidueIndex = 1;
+	unsigned int iStartResidueIndex = 1;
 	ResidueIter = vResidueIsotopicDistribution.find("Nterm");
 	if (ResidueIter != vResidueIsotopicDistribution.end())
 	{
@@ -581,19 +478,19 @@ bool Isotopologue::computeProductIon(string sSequence,
 	currentDistribution = vResidueDistribution.front();
 	sumDistribution = currentDistribution;
 
-	size_t j;
+	int j;
 	for (j = 1; j < iPeptideLength; j++)
 	{
 		currentDistribution = vResidueDistribution[j];
 		sumDistribution = sum(currentDistribution, sumDistribution);
 		vBionDistribution.push_back(sumDistribution);
 	}
+
+#pragma omp simd
 	for (i = 0; i < vBionDistribution.size(); i++)
 	{
-		vvdBionMass.push_back(vector<double>(vBionDistribution[i].massArray,
-											 vBionDistribution[i].massArray + vBionDistribution[i].aSize));
-		vvdBionProb.push_back(vector<double>(vBionDistribution[i].probArray,
-											 vBionDistribution[i].probArray + vBionDistribution[i].aSize));
+		vvdBionMass.push_back(move(vBionDistribution[i].vMass));
+		vvdBionProb.push_back(move(vBionDistribution[i].vProb));
 		//	cout << "b " << i << endl;
 		//	vBionDistribution[i].print();
 	}
@@ -610,22 +507,22 @@ bool Isotopologue::computeProductIon(string sSequence,
 	{
 		currentDistribution = vResidueDistribution[j];
 		sumDistribution = sum(currentDistribution, sumDistribution);
-		vYionDistribution.push_back(sumDistribution);
+		vYionDistribution.push_back((sumDistribution));
 	}
 
+#pragma omp simd
 	for (i = 0; i < vYionDistribution.size(); i++)
 	{
-		vvdYionMass.push_back(vector<double>(vYionDistribution[i].massArray,
-											 vYionDistribution[i].massArray + vYionDistribution[i].aSize));
-		vvdYionProb.push_back(vector<double>(vYionDistribution[i].probArray,
-											 vYionDistribution[i].probArray + vYionDistribution[i].aSize));
+		vvdYionMass.push_back(move(vYionDistribution[i].vMass));
+		vvdYionProb.push_back(move(vYionDistribution[i].vProb));
 		//	cout << "y " << i << endl;
 		//	vYionDistribution[i].print();
 	}
 
 	// change the masses to correct for the proton transfer during peptide bond cleavage
-	size_t n;
-	size_t m;
+	unsigned int n;
+	unsigned int m;
+#pragma omp simd
 	for (n = 0; n < vvdYionMass.size(); ++n)
 	{
 		for (m = 0; m < vvdYionMass[n].size(); ++m)
@@ -633,7 +530,7 @@ bool Isotopologue::computeProductIon(string sSequence,
 			vvdYionMass[n][m] += dProtonMass;
 		}
 	}
-
+#pragma omp simd
 	for (n = 0; n < vvdBionMass.size(); ++n)
 	{
 		for (m = 0; m < vvdBionMass[n].size(); ++m)
@@ -642,23 +539,23 @@ bool Isotopologue::computeProductIon(string sSequence,
 		}
 	}
 
-	// cout << "Y		B" << endl;
-	// for (n = 0; n < vvdBionMass.size(); ++n)
-	// {
-	// 	cout << vvdYionMass[n][0] << "\t\t" << vvdBionMass[n][0] << endl;
-	// }
+	//	cout << "Y		B" << endl;
+	//	for (n = 0; n < vvdBionMass.size(); ++n)
+	//	{
+	//		cout << vvdYionMass[n][0] << "\t\t" << vvdBionMass[n][0] << endl;
+	//	}
 
 	return true;
 }
 
-bool Isotopologue::computeIsotopicDistribution(vector<size_t> AtomicComposition, IsotopeDistribution &myIsotopeDistribution)
+bool Isotopologue::computeIsotopicDistribution(vector<int> AtomicComposition, IsotopeDistribution &myIsotopeDistribution)
 {
 	IsotopeDistribution sumDistribution;
 	IsotopeDistribution currentAtomDistribution;
 	currentAtomDistribution = multiply(vAtomIsotopicDistribution[0], AtomicComposition[0]);
 	sumDistribution = currentAtomDistribution;
 
-	for (size_t i = 1; i < AtomNumber; i++)
+	for (unsigned int i = 1; i < AtomNumber; i++)
 	{
 		currentAtomDistribution = multiply(vAtomIsotopicDistribution[i], AtomicComposition[i]);
 		sumDistribution = sum(currentAtomDistribution, sumDistribution);
@@ -668,12 +565,12 @@ bool Isotopologue::computeIsotopicDistribution(vector<size_t> AtomicComposition,
 	return true;
 }
 
-bool Isotopologue::computeAtomicComposition(string sSequence, vector<size_t> &myAtomicComposition)
+bool Isotopologue::computeAtomicComposition(string sSequence, vector<int> &myAtomicComposition)
 {
-	vector<size_t> AtomicComposition;
-	vector<size_t> CurrentComposition;
-	size_t i;
-	map<string, vector<size_t>>::iterator ResidueIter;
+	vector<int> AtomicComposition;
+	vector<int> CurrentComposition;
+	unsigned int i;
+	map<string, vector<int>>::iterator ResidueIter;
 
 	for (i = 0; i < AtomNumber; i++)
 		AtomicComposition.push_back(0);
@@ -704,7 +601,7 @@ bool Isotopologue::computeAtomicComposition(string sSequence, vector<size_t> &my
 		return false;
 	}
 
-	for (size_t j = 0; j < sSequence.length(); j++)
+	for (unsigned int j = 0; j < sSequence.length(); j++)
 	{
 		string currentResidue = sSequence.substr(j, 1);
 		ResidueIter = mResidueAtomicComposition.find(currentResidue);
@@ -727,29 +624,30 @@ bool Isotopologue::computeAtomicComposition(string sSequence, vector<size_t> &my
 
 IsotopeDistribution Isotopologue::sum(const IsotopeDistribution &distribution0, const IsotopeDistribution &distribution1)
 {
-	float ProbabilityCutoff_local = 0.000001;
+	double ProbabilityCutoff_local = 0.000001;
 
-	float currentMass;
-	float currentProb;
-	size_t iSizeDistribution0 = distribution0.aSize;
-	size_t iSizeDistribution1 = distribution1.aSize;
-	size_t iCount = 0;
-	float dSum = 0;
+	IsotopeDistribution sumDistribution;
+	double currentMass;
+	double currentProb;
+	int iSizeDistribution0 = distribution0.vMass.size();
+	int iSizeDistribution1 = distribution1.vMass.size();
+	int iCount = 0;
+	double dSum = 0;
 	size_t newSize = iSizeDistribution0 + iSizeDistribution1 - 1;
-	IsotopeDistribution sumDistribution(newSize);
+	sumDistribution.vMass.reserve(newSize);
+	sumDistribution.vProb.reserve(newSize);
 #pragma omp simd
-	for (size_t k = 0; k < newSize; k++)
+	for (int k = 0; k < newSize; k++)
 	{
-		float sumweight = 0, summass = 0;
-		size_t start = k < (iSizeDistribution1 - 1) ? 0 : k - iSizeDistribution1 + 1; // max(0, k-f_n+1)
-		size_t end = k < (iSizeDistribution0 - 1) ? k : iSizeDistribution0 - 1;		  // min(g_n - 1, k)
+		double sumweight = 0, summass = 0;
+		int start = k < (iSizeDistribution1 - 1) ? 0 : k - iSizeDistribution1 + 1; // max(0, k-f_n+1)
+		int end = k < (iSizeDistribution0 - 1) ? k : iSizeDistribution0 - 1;	   // min(g_n - 1, k)
 		iCount = 0;
 		dSum = 0;
-		for (size_t i = start; i <= end; i++)
+		for (int i = start; i <= end; i++)
 		{
-			size_t ix = k - i;
-			float weight = distribution0.probArray[i] * distribution1.probArray[ix];
-			float mass = distribution0.massArray[i] + distribution1.massArray[ix];
+			double weight = distribution0.vProb[i] * distribution1.vProb[k - i];
+			double mass = distribution0.vMass[i] + distribution1.vMass[k - i];
 			sumweight += weight;
 			summass += weight * mass;
 			iCount += 1;
@@ -757,22 +655,73 @@ IsotopeDistribution Isotopologue::sum(const IsotopeDistribution &distribution0, 
 		}
 		if (sumweight == 0)
 		{
-			currentMass = dSum / ((float)iCount);
+			currentMass = dSum / ((double)iCount);
 		}
 		else
 		{
 			currentMass = summass / sumweight;
 		}
 		currentProb = sumweight;
-		sumDistribution.massArray[k] = currentMass;
-		sumDistribution.probArray[k] = currentProb;
+		sumDistribution.vMass.push_back(currentMass);
+		sumDistribution.vProb.push_back(currentProb);
 	}
 
 	//prune small probabilities
-	sumDistribution.filterProbCutoff(ProbabilityCutoff_local);
+	vector<double>::iterator iteProb = sumDistribution.vProb.begin();
+	vector<double>::iterator iteMass = sumDistribution.vMass.begin();
+	while (iteProb != sumDistribution.vProb.end())
+	{
+		if ((*iteProb) > ProbabilityCutoff_local)
+		{
+			break;
+		}
+		iteProb++;
+		iteMass++;
+	}
+	if (iteProb != sumDistribution.vProb.begin())
+	{
+		sumDistribution.vProb.erase(sumDistribution.vProb.begin(), iteProb);
+		sumDistribution.vMass.erase(sumDistribution.vMass.begin(), iteMass);
+	}
+
+	iteProb = sumDistribution.vProb.end() - 1;
+	iteMass = sumDistribution.vMass.end() - 1;
+	while (iteProb != sumDistribution.vProb.begin())
+	{
+		if ((*iteProb) > ProbabilityCutoff_local)
+		{
+			break;
+		}
+		iteProb--;
+		iteMass--;
+	}
+	if (iteProb != sumDistribution.vProb.end() - 1)
+	{
+		sumDistribution.vProb.erase(iteProb + 1, sumDistribution.vProb.end());
+		sumDistribution.vMass.erase(iteMass + 1, sumDistribution.vMass.end());
+	}
 
 	// normalize the probability space to 1
-	sumDistribution.normalize();
+	int iSizeSumDistribution;
+	int i;
+	double sumProb = 0;
+	iSizeSumDistribution = sumDistribution.vMass.size();
+	for (i = 0; i < iSizeSumDistribution; ++i)
+	{
+		sumProb += sumDistribution.vProb[i];
+	}
+
+	if (sumProb <= 0)
+	{
+		cerr << "Error: Sum of distribution is zero" << endl;
+		exit(1);
+		return sumDistribution;
+	}
+
+	for (i = 0; i < iSizeSumDistribution; ++i)
+	{
+		sumDistribution.vProb[i] = sumDistribution.vProb[i] / sumProb;
+	}
 
 	return sumDistribution;
 }
@@ -781,27 +730,27 @@ IsotopeDistribution Isotopologue::multiply(const IsotopeDistribution &distributi
 {
 	if (count == 1)
 		return distribution0;
-	IsotopeDistribution productDistribution(1);
-	productDistribution.massArray[0] = 0.0;
-	productDistribution.probArray[0] = 1.0;
+	IsotopeDistribution productDistribution;
+	productDistribution.vMass.push_back(0.0);
+	productDistribution.vProb.push_back(1.0);
+
 	if (count < 0)
 	{
 		IsotopeDistribution negativeDistribution = distribution0;
 #pragma omp simd
-		for (size_t n = 0; n < negativeDistribution.aSize; n++)
+		for (unsigned int n = 0; n < negativeDistribution.vMass.size(); n++)
 		{
-			negativeDistribution.massArray[n] = -negativeDistribution.massArray[n];
+			negativeDistribution.vMass[n] = -negativeDistribution.vMass[n];
 		}
-#pragma omp simd
-		for (size_t i = 0; i < std::abs(count); ++i)
+
+		for (int i = 0; i < abs(count); ++i)
 		{
 			productDistribution = sum(productDistribution, negativeDistribution);
 		}
 	}
 	else
 	{
-#pragma omp simd
-		for (size_t i = 0; i < count; ++i)
+		for (int i = 0; i < count; ++i)
 		{
 			productDistribution = sum(productDistribution, distribution0);
 		}
@@ -809,11 +758,10 @@ IsotopeDistribution Isotopologue::multiply(const IsotopeDistribution &distributi
 	return productDistribution;
 }
 
-void Isotopologue::shiftMass(IsotopeDistribution &distribution0, float dMass)
+void Isotopologue::shiftMass(IsotopeDistribution &distribution0, double dMass)
 {
-#pragma omp simd
-	for (size_t i = 0; i < distribution0.aSize; ++i)
+	for (unsigned int i = 0; i < distribution0.vMass.size(); ++i)
 	{
-		distribution0.massArray[i] = distribution0.massArray[i] + dMass;
+		distribution0.vMass[i] = distribution0.vMass[i] + dMass;
 	}
 }

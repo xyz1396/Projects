@@ -1,5 +1,35 @@
 #include "isotopologue.h"
 #include "proNovoConfig.h"
+#include "ms2scanvector.h"
+
+void test_loadFT()
+{
+    cout << "\n"
+         << "test_loadFT" << endl;
+    MS2ScanVector *pMainMS2ScanVector = new MS2ScanVector(
+        "timeCompare/AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2",
+        "timeCompare",
+        "timeCompare/SiproConfig.N15_0Pct.cfg",
+        true);
+    cout << "load " << pMainMS2ScanVector->loadFT2file() << endl;
+    cout << "loaded " << pMainMS2ScanVector->vpAllMS2Scans.size() << " scans" << endl;
+    // pMainMS2ScanVector->vpAllMS2Scans[66].print();
+    // pMainMS2ScanVector->vpAllMS2ScanPtrs[66]->print();
+    bool testPassed = true;
+    for (size_t i = 6666; i < 6686; i++)
+        cout << pMainMS2ScanVector->vpAllMS2ScanPtrs[i]->dParentNeutralMass << endl;
+    for (size_t i = 0; i < pMainMS2ScanVector->vpAllMS2Scans[66].vdIntensity.size(); i++)
+    {
+        if (pMainMS2ScanVector->vpAllMS2Scans[66].vdIntensity[i] != pMainMS2ScanVector->vpAllMS2ScanPtrs[66]->vdIntensity[i])
+        {
+            testPassed = false;
+            break;
+        }
+    }
+    if (testPassed)
+        cout << "test_loadFT passed" << endl;
+    delete pMainMS2ScanVector;
+}
 
 void test_constructor()
 {
@@ -90,6 +120,7 @@ void test_computeProductIon()
 
 int main(int argc, char const *argv[])
 {
+    test_loadFT();
     test_constructor();
     test_filter();
     test_sum();

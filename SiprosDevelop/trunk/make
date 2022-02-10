@@ -17,6 +17,11 @@ case $1 in
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make -j6
     ;;
+"buildTick")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DTicktock=Ticktock ..
+    make -j6
+    ;;
 "debug")
     cd build
     cmake -DCMAKE_BUILD_TYPE=Debug ..
@@ -29,7 +34,9 @@ case $1 in
 "run")
     cd timeCompare
     starttime=$(date +'%Y-%m-%d %H:%M:%S')
-    ../bin/SiprosV3omp -c SiproConfig.N15_0Pct.cfg -f AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2 -s
+    ../bin/SiprosV3omp -c ../../data/SiproConfig.N15_0Pct.cfg \
+        -f ../../data/AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2 \
+        -o . -s
     endtime=$(date +'%Y-%m-%d %H:%M:%S')
     start_seconds=$(date --date="$starttime" +%s)
     end_seconds=$(date --date="$endtime" +%s)

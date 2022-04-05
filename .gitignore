@@ -1,3 +1,7 @@
+# for c#
+obj/
+packages/
+
 # Prerequisites
 *.d
 

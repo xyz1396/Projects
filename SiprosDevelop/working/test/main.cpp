@@ -118,13 +118,60 @@ void test_computeProductIon()
     }
 }
 
+class TestPeptide : public Peptide
+{
+public:
+    void print()
+    {
+        cout << "Protein name: " << sProteinName << endl;
+        cout << "Protein seq: " << sOriginalPeptide << endl;
+        cout << "Protein PTM: " << sPeptide << endl;
+    }
+};
+
+class TestProteinDatabase : public ProteinDatabase
+{
+public:
+    TestProteinDatabase(bool bScreenOutput) : ProteinDatabase(bScreenOutput)
+    {
+    }
+    void printslegalChar()
+    {
+        cout << slegalChar << endl;
+    }
+};
+
+void test_nextPeptide()
+{
+    ProNovoConfig::setFilename("/ourdisk/hpc/prebiotics/yixiong/auto_archive_notyet/Projects/SiprosDevelop/data/SiproConfig.Ecoli.C13.cfg");
+    cout << ProNovoConfig::getFASTAfilename() << endl;
+    TestProteinDatabase myProteinDatabase(false);
+    myProteinDatabase.printslegalChar();
+    for (auto i : ProNovoConfig::vsSingleResidueNames)
+        cout << i;
+    cout << endl;
+    cout << "MaxPTMcount: " << ProNovoConfig::getMaxPTMcount() << endl;
+    myProteinDatabase.loadDatabase();
+    myProteinDatabase.getFirstProtein();
+    TestPeptide *TestPeptidePtr = new TestPeptide();
+    int i = 0;
+    while (i < 500)
+    {
+        myProteinDatabase.getNextPeptide(TestPeptidePtr);
+        TestPeptidePtr->print();
+        i++;
+    }
+    delete TestPeptidePtr;
+}
+
 int main(int argc, char const *argv[])
 {
-    test_loadFT();
-    test_constructor();
-    test_filter();
-    test_sum();
-    test_multiply();
-    test_computeProductIon();
+    // test_loadFT();
+    // test_constructor();
+    // test_filter();
+    // test_sum();
+    // test_multiply();
+    // test_computeProductIon();
+    test_nextPeptide();
     return 0;
 }

@@ -1,0 +1,165 @@
+---
+title: "Scan frequence analysis"
+author: "xyz"
+date: "2022/3/26"
+output: html_document
+---
+
+```{r}
+devtools::load_all()
+library(ggplot2)
+library(dplyr)
+```
+
+```{r CP_6801_E50}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
+
+# MS1 has 9515 scans
+length(ms1)
+
+# MS2 has 18449 scans
+length(ms2)
+
+# MS1 has average 1.94 MS2 scan
+length(ms2) / length(ms1)
+
+getInfo <- function(x) {
+  return (c(
+    ScanNumber = x$scanNumber,
+    RetentionTime = x$retentionTime
+  ))
+}
+df1 <- as.data.frame(t(sapply(ms1, getInfo)))
+ggplot(df1, aes(RetentionTime)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("MS1 scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("MS1 scans per minute.pdf", width = 8, height = 6)
+
+getInfo <- function(x) {
+  return (
+    c(
+      PrecursorMz = x$precursorMz,
+      PrecursorScanNumber = x$precursorScanNumber,
+      RetentionTime = x$retentionTime
+    )
+  )
+}
+df2 <- as.data.frame(t(sapply(ms2, getInfo)))
+ggplot(df2, aes(RetentionTime)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("MS2 scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("MS2 scans per minute.pdf", width = 8, height = 6)
+
+# 2401 MS1 scans do not have ms2 scan
+length(unique(df1$ScanNumber)) - length(unique(df2$PrecursorScanNumber))
+
+df3 <-
+  rbind(
+    data.frame(RetentionTime = df1$RetentionTime, Type = "MS1"),
+    data.frame(RetentionTime = df2$RetentionTime, Type = "MS2")
+  )
+ggplot(df3, aes(RetentionTime, color = Type)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("Scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("MS1 MS2 scans per minute.pdf",
+       width = 8,
+       height = 6)
+```
+
+```{r X2}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X2.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X2.FT2")
+
+# MS1 has 5190 scans
+length(ms1)
+
+# MS2 has 39670 scans
+length(ms2)
+
+# MS1 has average 7.64 MS2 scan
+length(ms2) / length(ms1)
+
+getInfo <- function(x) {
+  return (c(
+    ScanNumber = x$scanNumber,
+    RetentionTime = x$retentionTime
+  ))
+}
+df1 <- as.data.frame(t(sapply(ms1, getInfo)))
+ggplot(df1, aes(RetentionTime)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("MS1 scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("X2 MS1 scans per minute.pdf", width = 8, height = 6)
+
+getInfo <- function(x) {
+  return (
+    c(
+      PrecursorMz = x$precursorMz,
+      PrecursorScanNumber = x$precursorScanNumber,
+      RetentionTime = x$retentionTime
+    )
+  )
+}
+df2 <- as.data.frame(t(sapply(ms2, getInfo)))
+ggplot(df2, aes(RetentionTime)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("MS2 scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("X2 MS2 scans per minute.pdf", width = 8, height = 6)
+
+# 981 MS1 scans do not have ms2 scan
+length(unique(df1$ScanNumber)) - length(unique(df2$PrecursorScanNumber))
+
+df3 <-
+  rbind(
+    data.frame(RetentionTime = df1$RetentionTime, Type = "MS1"),
+    data.frame(RetentionTime = df2$RetentionTime, Type = "MS2")
+  )
+ggplot(df3, aes(RetentionTime, color = Type)) +
+  geom_freqpoly(binwidth = 1) +
+  xlab("Retention time") +
+  ylab("Scans per minute") +
+  theme(text = element_text(size = 15))
+ggsave("X2 MS1 MS2 scans per minute.pdf",
+       width = 8,
+       height = 6)
+
+df4 <-
+  data.frame(mz = round(df2$PrecursorMz / 5, 0) * 5,
+             time = round(df2$RetentionTime, 0))
+df4 <- group_by(df4, mz, time)
+df4 <- summarise(df4, freq = n())
+
+ggplot(df4) +
+  geom_tile(aes(
+    time,
+    mz,
+    fill = freq,
+    width = 1,
+    height = 5
+  )) +
+  scale_fill_gradientn(colours = topo.colors(15)) +
+  theme_bw() +
+  ylab("Precursor m/z") +
+  xlab("Retention time") +
+  # change legend title
+  labs(fill = "Freq") +
+  theme(text = element_text(size = 20))
+ggsave("Precursor frequence.pdf",
+       width = 6,
+       height = 12)
+```

@@ -34,6 +34,76 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// readOneScanMS2
+List readOneScanMS2(CharacterVector ftFile, NumericVector scanCount);
+RcppExport SEXP _AAisoPeak_readOneScanMS2(SEXP ftFileSEXP, SEXP scanCountSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type scanCount(scanCountSEXP);
+    rcpp_result_gen = Rcpp::wrap(readOneScanMS2(ftFile, scanCount));
+    return rcpp_result_gen;
+END_RCPP
+}
+// readOneScanMS1
+List readOneScanMS1(CharacterVector ftFile, NumericVector scanCount);
+RcppExport SEXP _AAisoPeak_readOneScanMS1(SEXP ftFileSEXP, SEXP scanCountSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type scanCount(scanCountSEXP);
+    rcpp_result_gen = Rcpp::wrap(readOneScanMS1(ftFile, scanCount));
+    return rcpp_result_gen;
+END_RCPP
+}
+// readScansMS1
+List readScansMS1(CharacterVector ftFile, NumericVector scanCount);
+RcppExport SEXP _AAisoPeak_readScansMS1(SEXP ftFileSEXP, SEXP scanCountSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type scanCount(scanCountSEXP);
+    rcpp_result_gen = Rcpp::wrap(readScansMS1(ftFile, scanCount));
+    return rcpp_result_gen;
+END_RCPP
+}
+// readAllScanMS1
+List readAllScanMS1(CharacterVector ftFile);
+RcppExport SEXP _AAisoPeak_readAllScanMS1(SEXP ftFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(readAllScanMS1(ftFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// readScansMS2
+List readScansMS2(CharacterVector ftFile, NumericVector scanCount);
+RcppExport SEXP _AAisoPeak_readScansMS2(SEXP ftFileSEXP, SEXP scanCountSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type scanCount(scanCountSEXP);
+    rcpp_result_gen = Rcpp::wrap(readScansMS2(ftFile, scanCount));
+    return rcpp_result_gen;
+END_RCPP
+}
+// readAllScanMS2
+List readAllScanMS2(CharacterVector ftFile);
+RcppExport SEXP _AAisoPeak_readAllScanMS2(SEXP ftFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(readAllScanMS2(ftFile));
+    return rcpp_result_gen;
+END_RCPP
+}
 // calc_sum
 double calc_sum(NumericVector x);
 RcppExport SEXP _AAisoPeak_calc_sum(SEXP xSEXP) {
@@ -45,11 +115,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_ftFileReader
+void test_ftFileReader(CharacterVector ftFile);
+RcppExport SEXP _AAisoPeak_test_ftFileReader(SEXP ftFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ftFile(ftFileSEXP);
+    test_ftFileReader(ftFile);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_AAisoPeak_peak_calculator", (DL_FUNC) &_AAisoPeak_peak_calculator, 1},
     {"_AAisoPeak_peak_calculator_DIY", (DL_FUNC) &_AAisoPeak_peak_calculator_DIY, 3},
+    {"_AAisoPeak_readOneScanMS2", (DL_FUNC) &_AAisoPeak_readOneScanMS2, 2},
+    {"_AAisoPeak_readOneScanMS1", (DL_FUNC) &_AAisoPeak_readOneScanMS1, 2},
+    {"_AAisoPeak_readScansMS1", (DL_FUNC) &_AAisoPeak_readScansMS1, 2},
+    {"_AAisoPeak_readAllScanMS1", (DL_FUNC) &_AAisoPeak_readAllScanMS1, 1},
+    {"_AAisoPeak_readScansMS2", (DL_FUNC) &_AAisoPeak_readScansMS2, 2},
+    {"_AAisoPeak_readAllScanMS2", (DL_FUNC) &_AAisoPeak_readAllScanMS2, 1},
     {"_AAisoPeak_calc_sum", (DL_FUNC) &_AAisoPeak_calc_sum, 1},
+    {"_AAisoPeak_test_ftFileReader", (DL_FUNC) &_AAisoPeak_test_ftFileReader, 1},
     {NULL, NULL, 0}
 };
 

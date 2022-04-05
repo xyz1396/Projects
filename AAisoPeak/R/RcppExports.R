@@ -17,10 +17,63 @@ peak_calculator_DIY <- function(AAstr, Atom, Prob) {
     .Call(`_AAisoPeak_peak_calculator_DIY`, AAstr, Atom, Prob)
 }
 
+#' readOneScanMS2
+#' @param ftFile a ft2 file's full path
+#' @param scanCount the scanCount'th scan
+#' @export
+readOneScanMS2 <- function(ftFile, scanCount) {
+    .Call(`_AAisoPeak_readOneScanMS2`, ftFile, scanCount)
+}
+
+#' readOneScanMS1
+#' @param ftFile a ft1 file's full path
+#' @param scanCount the scanCount'th scan
+#' @export
+readOneScanMS1 <- function(ftFile, scanCount) {
+    .Call(`_AAisoPeak_readOneScanMS1`, ftFile, scanCount)
+}
+
+#' readScansMS1
+#' @param ftFile a ft1 file's full path
+#' @param scanNumber the scanNumber th scan
+#' @export
+readScansMS1 <- function(ftFile, scanCount) {
+    .Call(`_AAisoPeak_readScansMS1`, ftFile, scanCount)
+}
+
+#' readAllScanMS1
+#' @param ftFile a ft1 file's full path
+#' @export
+readAllScanMS1 <- function(ftFile) {
+    .Call(`_AAisoPeak_readAllScanMS1`, ftFile)
+}
+
+#' readScansMS2
+#' @param ftFile a ft2 file's full path
+#' @param scanNumber the scanNumber th scan
+#' @export
+readScansMS2 <- function(ftFile, scanCount) {
+    .Call(`_AAisoPeak_readScansMS2`, ftFile, scanCount)
+}
+
+#' readAllScanMS2
+#' @param ftFile a ft1 file's full path
+#' @export
+readAllScanMS2 <- function(ftFile) {
+    .Call(`_AAisoPeak_readAllScanMS2`, ftFile)
+}
+
 #' Simple sum
 #' @param x a numeric vector
 #' @export
 calc_sum <- function(x) {
     .Call(`_AAisoPeak_calc_sum`, x)
+}
+
+#' test ftFileReader
+#' @param ftFile a ft file's full path
+#' @export
+test_ftFileReader <- function(ftFile) {
+    invisible(.Call(`_AAisoPeak_test_ftFileReader`, ftFile))
 }
 

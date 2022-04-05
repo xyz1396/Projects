@@ -12,6 +12,7 @@ using namespace std;
 
 class alignas(64) Peptide
 {
+protected:
     // the sequence of the peptide
     string sPeptide;
     // the sequence of the original peptide

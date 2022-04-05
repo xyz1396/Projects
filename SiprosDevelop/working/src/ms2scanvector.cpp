@@ -128,10 +128,10 @@ bool MS2ScanVector::ReadFT2File()
 				input.str(words[1]);
 				input >> pMS2Scan.iScanId;
 				input.clear();
-				input.str(words[3]);
+				input.str(words[2]);
 				input >> pMS2Scan.dParentMZ;
 				input.clear();
-				pMS2Scan.isMS1HighRes = isMS1HighRes(words[3]);
+				pMS2Scan.isMS1HighRes = isMS1HighRes(words[2]);
 				// in case no Z Line
 				pMS2Scan.iParentChargeState = 0;
 				pMS2Scan.dParentNeutralMass = 0;
@@ -148,12 +148,12 @@ bool MS2ScanVector::ReadFT2File()
 				// input >> pMS2Scan->dParentNeutralMass;
 				// input.clear();
 			}
-			// read ScanType from chunk 2, 5, 6 at line started with "I	ScanType"
+			// read ScanType from chunk 2 at line started with "I	ScanType"
 			else if (sline.at(0) == 'I')
 			{
 				TokenVector words(sline, " \r\t\n");
 				if (words[1] == "ScanType")
-					pMS2Scan.setScanType(words[2] + words[5] + words[6]);
+					pMS2Scan.setScanType(words[2]);
 			}
 		}
 		ft2_stream.clear();

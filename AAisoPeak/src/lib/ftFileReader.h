@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <filesystem>
+namespace fs = std::filesystem;
 using namespace std;
 
 struct alignas(64) Scan

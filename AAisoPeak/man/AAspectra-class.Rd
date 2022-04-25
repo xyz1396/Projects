@@ -20,3 +20,9 @@ AAspectra S4 object
 \item{\code{AAstr}}{character.}
 }}
 
+\examples{
+AAsOBJ <- new("AAspectra",
+spectra = spectra,
+charge = charge,
+AAstr = AAstr)
+}

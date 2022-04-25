@@ -48,16 +48,17 @@ List readAllScanMS1(CharacterVector ftFile)
     for (size_t i = 0; i < reader.Scans.size(); i++)
     {
         mScan = &reader.Scans[i];
-        DataFrame peakDf = DataFrame::create(Named("mz") = mScan->mz,
-                                             _["intensity"] = mScan->intensity,
-                                             _["resolution"] = mScan->resolution,
-                                             _["baseLine"] = mScan->baseLine,
-                                             _["noise"] = mScan->noise,
-                                             _["charge"] = mScan->charge);
+        // use move to speed up copy vector
+        DataFrame peakDf = DataFrame::create(Named("mz") = move(mScan->mz),
+                                             _["intensity"] = move(mScan->intensity),
+                                             _["resolution"] = move(mScan->resolution),
+                                             _["baseLine"] = move(mScan->baseLine),
+                                             _["noise"] = move(mScan->noise),
+                                             _["charge"] = move(mScan->charge));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,
-                                      _["peaks"] = peakDf);
-        scanList[i] = mScanList;
+                                      _["peaks"] = move(peakDf));
+        scanList[i] = move(mScanList);
     }
     return scanList;
 }
@@ -109,19 +110,20 @@ List readAllScanMS2(CharacterVector ftFile)
     for (size_t i = 0; i < reader.Scans.size(); i++)
     {
         mScan = &reader.Scans[i];
-        DataFrame peakDf = DataFrame::create(Named("mz") = mScan->mz,
-                                             _["intensity"] = mScan->intensity,
-                                             _["resolution"] = mScan->resolution,
-                                             _["baseLine"] = mScan->baseLine,
-                                             _["noise"] = mScan->noise,
-                                             _["charge"] = mScan->charge);
+        // use move to speed up copy vector
+        DataFrame peakDf = DataFrame::create(Named("mz") = move(mScan->mz),
+                                             _["intensity"] = move(mScan->intensity),
+                                             _["resolution"] = move(mScan->resolution),
+                                             _["baseLine"] = move(mScan->baseLine),
+                                             _["noise"] = move(mScan->noise),
+                                             _["charge"] = move(mScan->charge));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,
                                       _["precursorScanNumber"] = mScan->precursorScanNumber,
                                       _["precursorMz"] = mScan->precursorMz,
                                       _["precursorCharge"] = mScan->precursorCharge,
-                                      _["peaks"] = peakDf);
-        scanList[i] = mScanList;
+                                      _["peaks"] = move(peakDf));
+        scanList[i] = move(mScanList);
     }
     return scanList;
 }

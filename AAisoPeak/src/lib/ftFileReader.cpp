@@ -23,10 +23,17 @@ ftFileReader::ftFileReader(string file) : ftFileName(file)
 {
 	setlocale(LC_ALL, "C");
 	ios_base::sync_with_stdio(false);
-	ftFileStream.open(ftFileName.c_str(), ios::in);
-	if (!ftFileStream.is_open())
+	if (fs::exists(ftFileName))
 	{
-		cout << "Cannot open " << ftFileName << endl;
+		ftFileStream.open(ftFileName.c_str(), ios::in);
+		if (!ftFileStream.is_open())
+		{
+			cout << "Cannot open " << ftFileName << endl;
+		}
+	}
+	else
+	{
+		cout << ftFileName << " does not exists" << endl;
 	}
 }
 

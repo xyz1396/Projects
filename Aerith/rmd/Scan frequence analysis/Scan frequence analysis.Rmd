@@ -1,0 +1,94 @@
+---
+title: "Scan frequence analysis"
+author: "xyz"
+date: "2022/5/7"
+output: html_document
+---
+
+```{r}
+library(Aerith)
+library(ggplot2)
+```
+
+```{r CP_6801_E50}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
+
+# MS1 has 9515 scans
+length(ms1)
+
+# MS2 has 18449 scans
+length(ms2)
+
+# MS1 has average 1.94 MS2 scan
+length(ms2) / length(ms1)
+
+infoMS1 <- getRetentionTimeAndPrecursorInfo(ms1)
+plotScanFrequency(infoMS1)
+ggsave("E50 MS1 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+infoMS2 <- getRetentionTimeAndPrecursorInfo(ms2)
+plotScanFrequency(infoMS2)
+ggsave("E50 MS2 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+# 2401 MS1 scans do not have ms2 scan
+length(unique(infoMS1$ScanNumber)) - length(unique(infoMS2$PrecursorScanNumber))
+
+plotScanFrequency(infoMS1) + plotScanFrequencyMS2(infoMS2)
+ggsave("E50 MS1 MS2 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+plotPrecursorMzFrequency(infoMS2)
+ggsave("E50 Precursor frequence.pdf",
+       width = 8,
+       height = 16)
+```
+
+
+```{r Pan_022822_X2}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X2.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X2.FT2")
+
+# MS1 has 5190 scans
+length(ms1)
+
+# MS2 has 39670 scans
+length(ms2)
+
+# MS1 has average 7.64 MS2 scan
+length(ms2) / length(ms1)
+
+infoMS1 <- getRetentionTimeAndPrecursorInfo(ms1)
+plotScanFrequency(infoMS1)
+ggsave("X2 MS1 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+infoMS2 <- getRetentionTimeAndPrecursorInfo(ms2)
+plotScanFrequency(infoMS2)
+ggsave("X2 MS2 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+# 981 MS1 scans do not have ms2 scan
+length(unique(infoMS1$ScanNumber)) - length(unique(infoMS2$PrecursorScanNumber))
+
+plotScanFrequency(infoMS1) + plotScanFrequencyMS2(infoMS2)
+ggsave("X2 MS1 MS2 scans per minute.pdf",
+       width = 25,
+       height = 5)
+
+plotPrecursorMzFrequency(infoMS2)
+ggsave("X2 Precursor frequence.pdf",
+       width = 6,
+       height = 12)
+```

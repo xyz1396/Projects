@@ -1,0 +1,242 @@
+---
+title: "Pct50 PSM check"
+author: "xyz"
+date: '2022-04-29'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(Aerith)
+library(stringr)
+```
+
+### plot protein distribution at different SIP abundance
+
+```{r}
+p <- plotProSipPct("data/201019_CP_6801_E50.N15.pro.cluster.txt")
+p
+ggsave("N15Pct50SIPresult.pdf", width = 8, height = 6)
+```
+
+### read PSMs and ft file
+
+```{r}
+psm <- read.table("data/201019_CP_6801_E50.N15.psm.txt", header = T)
+psm <- arrange(psm, abs(MassErrorDa) ,desc(Score))
+ft2 <- readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
+```
+
+### read the highest PSM
+
+```{r}
+element <- "N15"
+scanNumber <- psm$ScanNumber[1]
+charge <- psm$ParentCharge[1]
+pep <- psm$OriginalPeptide[1]
+pep <- str_sub(pep, 2, -2)
+pct <-
+  as.numeric(str_sub(str_split(psm$SearchName[1], "_", simplify = T)[2], 1, -4))
+# 19
+str_length(pep)
+realScan<-getRealScan(scanNumber, ft2)
+```
+
+### anlyse precursor MZ range and plot precursor
+
+```{r}
+precursor <- getSipPrecursorSpectra(pep, element, pct/100, 2:7)
+precursor2 <- precursor@spectra[precursor@spectra$Charge == 2,]
+# 7
+max(precursor2$MZ) - min(precursor2$MZ)
+precursor3 <- precursor@spectra[precursor@spectra$Charge == 3,]
+# 5
+max(precursor3$MZ) - min(precursor3$MZ)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 15N Pct", pct, " charge 2-7.pdf"),
+  width = 25,
+  height = 5
+)
+
+precursor <- getSipPrecursorSpectra(pep, element, 0.5, 2:7)
+precursor2 <- precursor@spectra[precursor@spectra$Charge == 2, ]
+# window is 12 when we use 50% N15
+# we need to set larger isolation window when pct is close to 50%
+max(precursor2$MZ) - min(precursor2$MZ)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 15N Pct",  0.5, " charge 2-7.pdf"),
+  width = 25,
+  height = 5
+)
+
+precursor <- getSipPrecursorSpectra(pep, element, pct/100, charge)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 15N Pct", pct, " charge 3.pdf"),
+  width = 25,
+  height = 5
+)
+```
+
+### plot B Y ion and real scan
+
+```{r}
+BY <- getSipBYionSpectra(pep, element, pct / 100, 1:2,charge)
+p <-
+  plot(BY) + plotSipBYionLabel(BY)
+p
+ggsave(paste0("top1 B Y ion 15N Pct", pct, " .pdf"),
+       width = 25,
+       height = 5)
+
+plot(realScan)
+ggsave(paste0("top1 real 15N Pct", pct, " .pdf"),
+       width = 25,
+       height = 5)
+
+p <-
+  plot(BY) + plotRealScan(realScan) + plotSipBYionLabel(BY)
+p
+ggsave(paste0("top1 B Y ion 15N Pct", pct, " and real Scan.pdf"),
+       width = 25,
+       height = 7)
+```
+
+### plot B Y ion at 50% and real scan
+
+```{r}
+BY <- getSipBYionSpectra(pep, element, 0.5, 1:2)
+p <- plot(BY) + plotRealScan(realScan) + plotSipBYionLabel(BY)
+p
+ggsave("top1 B Y ion 15N Pct 0.50 and real scan.pdf",
+       width = 25,
+       height = 7)
+```
+
+### plot PSMs of pct 50
+
+```{r}
+psm <- read.table("data/201019_CP_6801_E50.N15.psm.txt", header = T)
+psm <- arrange(psm, abs(MassErrorDa), desc(Score))
+psm <- psm[1:10, ]
+element <- "N15"
+
+ftFileNames <- psm$Filename
+scanNumbers <- psm$ScanNumber
+proNames <- psm$ProteinNames
+charges <- psm$ParentCharge
+pep <- psm$OriginalPeptide
+pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100
+
+ft2 <- readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
+realScans <- getRealScans(ft2, scanNumbers)
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```
+
+### plot PSMs of unlabeled Ecoli
+
+```{r}
+p <- plotProSipPct("data/Pan_022822_X.pro.cluster.txt")
+p
+ggsave("C13Pct1SIPresult.pdf", width = 8, height = 6)
+
+psm <- read.table("data/Pan_022822_X.psm.txt", header = T)
+psm <- arrange(psm, Filename , abs(MassErrorDa), desc(Score))
+psm <- psm[1:10, ]
+element <- "C13"
+
+ftFileNames <- psm$Filename
+scanNumbers <- psm$ScanNumber
+proNames <- psm$ProteinNames
+charges <- psm$ParentCharge
+pep <- psm$OriginalPeptide
+pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100
+
+ft2 <- readAllScanMS2("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X1.FT2")
+realScans <- getRealScans(ft2, scanNumbers)
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```
+
+### plot PSMs of AMD pct 50
+
+```{r}
+# Median Pct: 49%
+plotProSipPct(
+  "data/AMD_StandardEnrichment_SampleBeta_50Percent15N_Velos_OrbiMS2_Run2_020110.pro.cluster.txt"
+)
+ggsave("AMDn15pct50SIPresult.pdf",
+       width = 8,
+       height = 6)
+
+psm <-
+  read.table(
+    "data/AMD_StandardEnrichment_SampleBeta_50Percent15N_Velos_OrbiMS2_Run2_020110.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename , abs(MassErrorDa), desc(Score))
+psm <- psm[1:10, ]
+element <- "N15"
+
+ftFileNames <- psm$Filename
+scanNumbers <- psm$ScanNumber
+proNames <- psm$ProteinNames
+charges <- psm$ParentCharge
+pep <- psm$OriginalPeptide
+pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100
+
+ft2 <- readAllScanMS2("/mnt/d/work/202205/AMD_StandardEnrichment_SampleBeta_50Percent15N_Velos_OrbiMS2_Run2_020110_02.FT2")
+realScans <- getRealScans(ft2, scanNumbers)
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```

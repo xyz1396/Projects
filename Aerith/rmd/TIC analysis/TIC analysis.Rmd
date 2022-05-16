@@ -1,0 +1,59 @@
+---
+title: "TIC analysis"
+author: "xyz"
+date: '2022-05-05'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+library(ggplot2)
+```
+
+```{r}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
+ticMS1 <- getTIC(ms1)
+# 5.164e+12
+formatC(sum(ticMS1$TIC), format = "e", digits = 3)
+plotTIC(ticMS1)
+ggsave(paste0("201019_CP_6801_E50.FT1.pdf"),
+       width = 25,
+       height = 5)
+ticMS2 <- getTIC(ms2)
+# 1.394e+11
+formatC(sum(ticMS2$TIC), format = "e", digits = 3)
+plotTIC(ticMS2)
+ggsave(paste0("201019_CP_6801_E50.FT2.pdf"),
+       width = 25,
+       height = 5)
+```
+
+```{r}
+ms1 <-
+  readAllScanMS1("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X1.FT1")
+ms2 <-
+  readAllScanMS2("/mnt/d/work/202203/ecoliPct1/ft/Pan_022822_X1.FT2")
+ticMS1 <- getTIC(ms1)
+# 9.994e+12
+formatC(sum(ticMS1$TIC), format = "e", digits = 3)
+plotTIC(ticMS1)
+ggsave(paste0("Pan_022822_X1.FT1.pdf"),
+       width = 25,
+       height = 5)
+ticMS2 <- getTIC(ms2)
+# 3.651e+11
+formatC(sum(ticMS2$TIC), format = "e", digits = 3)
+plotTIC(ticMS2)
+ggsave(paste0("Pan_022822_X1.FT2.pdf"),
+       width = 25,
+       height = 5)
+```
+
+

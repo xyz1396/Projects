@@ -83,7 +83,7 @@ namespace Raxport
         }
         public void writeFT1Scan(Scan FT1Scan)
         {
-            FT1writer.WriteLine("S\t{0:D}", currentScanNumber);
+            FT1writer.WriteLine("S\t{0:D}\t{1:F2}", currentScanNumber, currentScan.ScanStatistics.TIC);
             FT1writer.WriteLine("I\tRetentionTime\t{0:F6}", rawFile.RetentionTimeFromScanNumber(currentScanNumber));
             FT1writer.WriteLine("I\tScanType\tMs1");
             FT1writer.WriteLine("I\tScanFilter\t" + currentFilter.ToString());
@@ -91,8 +91,10 @@ namespace Raxport
         }
         public void writeFT2Scan(Scan FT2Scan)
         {
-            FT2writer.WriteLine("S\t{0:D}\t{1:F6}",
-                currentScanNumber, currentReaction.PrecursorMass);
+            // for old sipros V3 format
+            // FT2writer.WriteLine("S\t{0:D}\t{0:D}\t{1:F6}\t{2:F2}",
+            FT2writer.WriteLine("S\t{0:D}\t{1:F6}\t{2:F2}",
+                currentScanNumber, currentReaction.PrecursorMass, currentScan.ScanStatistics.TIC);
             var trailerLabels = rawFile.GetTrailerExtraInformation(currentScanNumber);
             object chargeState = 0;
             for (int i = 0; i < trailerLabels.Labels.Length; i++)

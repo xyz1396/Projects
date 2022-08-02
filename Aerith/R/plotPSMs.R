@@ -1,4 +1,4 @@
-#' get real scans from scans list of one ft file
+#' get real scans  from scans list of one ft file
 #'
 #' @param ft Scans list of one ft file
 #' @param scanNumbers Integer vector of scan number of PSMs
@@ -12,6 +12,22 @@
 #' realScans <- getRealScans(ft2, scanNumbers)
 getRealScans <- function(ft, scanNumbers) {
   return(lapply(scanNumbers, getRealScan, ft = ft))
+}
+
+#' get real scans with real charges from scans list of one ft file
+#'
+#' @param ft Scans list of one ft file
+#' @param scanNumbers Integer vector of scan number of PSMs
+#'
+#' @return List of AAspectra objects of real scans
+#' @export
+#'
+#' @examples
+#' scanNumbers <- 3:7
+#' ft2 <- readAllScanMS2("demo.FT2")
+#' realScans <- getRealScansWithCharges(ft2, scanNumbers)
+getRealScansWithCharges <- function(ft, scanNumbers) {
+  return(lapply(scanNumbers, getRealScanWithCharge, ft = ft))
 }
 
 #' plot PSMs from FT2 files and PSM results

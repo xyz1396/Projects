@@ -1,0 +1,120 @@
+---
+title: "outPutForPercolator"
+author: "xyz"
+date: '2022-07-04'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+library(dplyr)
+library(data.table)
+library(stringr)
+```
+
+```{r}
+psm <-
+  getUnfilteredPSMs(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25orbit90min/sip/",
+    ".",
+    10
+  )
+psm2 <- psm[psm$scores > 22, ]
+psm2 <-
+  arrange(psm2, ftFileNames, ftFileNames, scanNumbers, desc(scores))
+```
+
+```{r}
+psmOut <- data.frame(
+  id = psm$psmIDs,
+  label = ifelse(psm$isDecoys == FALSE, 1, -1),
+  scannr = psm$scanNumbers,
+  time = psm$scanNumbers,
+  score = psm$scores,
+  pct = psm$pcts,
+  rank = psm$ranks,
+  charge = psm$parentCharges,
+  mass = psm$measuredParentMasses,
+  pepLength = psm$pepLengths,
+  proteinCount = psm$proCounts,
+  peptide = psm$identifiedPepSeqs,
+  proteinId = psm$proNames
+)
+fwrite(psmOut,
+  "onlyPSM/pct25PSMs.tsv",
+  sep = "\t",
+  quote = F
+)
+psmOut$peptide <- psm$formatedPepSeqs
+psmOut$proteinId <- psm$trimedProteinNames
+fwrite(psmOut,
+  "proteinInference/pct25PSMs.tsv",
+  sep = "\t",
+  quote = F
+)
+```
+
+[percolator output format](https://github.com/percolator/percolator/wiki/Command-line-options#file-output-options)
+
+### only filter PSM
+
+```{bash}
+cd onlyPSM
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate percolator
+# protein inference
+# -U only psm
+# -y Use the mix-max method to assign q-values and PEPs 
+percolator pct25PSMs.tsv \
+  -m pct25.PSMs.percolator.tsv \
+  -M pct25.decoy.PSMs.percolator.tsv \
+  -y \
+  -U \
+  > percolator.log \
+  2>&1 
+```
+
+```{r}
+targetPSM <- fread("onlyPSM/pct25.PSMs.percolator.tsv", fill = T, sep = "\t")
+decoyPSM <-
+  fread("onlyPSM/pct25.decoy.PSMs.percolator.tsv",
+    fill = T,
+    sep = "\t"
+  )
+filteredPSM <- rbind(targetPSM, decoyPSM)
+filteredPSM <- filteredPSM[filteredPSM$`q-value` <= 0.01, ]
+filteredPSMorigin <- psm[match(filteredPSM$PSMId, psm$psmIDs), ]
+table(filteredPSMorigin$isDecoys)
+filteredPSMorigin <- filteredPSMorigin[filteredPSMorigin$isDecoys==F,]
+length(unique(paste(filteredPSMorigin$ftFileNames, filteredPSMorigin$scanNumbers)))
+mean(filteredPSMorigin$pcts)
+median(filteredPSMorigin$pcts)
+```
+
+### do protein Inference
+
+```{bash}
+cd proteinInference
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate percolator
+# protein inference
+# -U only psm
+# -y Use the mix-max method to assign q-values and PEPs 
+percolator pct25PSMs.tsv \
+  -r pct25.pep.percolator.tsv \
+  -B pct25.decoy.pep.percolator.tsv \
+  -m pct25.PSMs.percolator.tsv \
+  -M pct25.decoy.PSMs.percolator.tsv \
+  -l pct25.pro.percolator.tsv \
+  -L pct25.decoy.pro.percolator.tsv \
+  -Y \
+  -z trypsin \
+  -f /mnt/d/ubuntuShare/EcoliSIP/Ecoli_UP000000558.fasta \
+  -P Rev_ \
+  > percolator.log \
+  2>&1 
+```

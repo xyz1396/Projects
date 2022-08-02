@@ -1,0 +1,246 @@
+---
+title: "E. coli Iontrap pct 25 check"
+author: "xyz"
+date: '2022-05-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(Aerith)
+library(stringr)
+```
+
+### plot protein distribution at different SIP abundance
+
+```{r}
+p <-
+  plotProSipPct(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_Orbi.C13.pro.cluster.txt"
+  )
+p
+ggsave("C13orbitPct25SIPresult.pdf",
+       width = 8,
+       height = 6)
+```
+
+### read PSMs and ft file
+
+```{r}
+psm <-
+  readSip(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.C13_25Pct.sip"
+  )
+psm <- psm$PSM
+psm$MassError <-
+  abs(psm$measuredParentMasses - psm$calculatedParentMasses)
+psm$MassError <- abs(psm$MassError - round(psm$MassError,0))
+psm$IsDecoy <- str_detect(psm$proteinNames, "Rev_")
+ft2 <-
+  readAllScanMS2("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.FT2")
+```
+
+### plot score and mass error distribution
+
+```{r}
+ggplot(data = psm, aes(x = MassError, y = scores, color = IsDecoy)) +
+  geom_point(size = 0.5) + facet_wrap(vars(parentCharges)) +
+  theme(text = element_text(size = 15))
+ggsave(paste0("score and mass error distribution.pdf"),
+       width = 12,
+       height = 12)
+```
+
+### read the highest PSM
+
+```{r}
+psm <- arrange(psm, desc(scores))
+element <- "C13"
+scanNumber <- psm$scanNumbers[1]
+charge <- psm$parentCharges[1]
+pep <- psm$originalPeptides[1]
+pep <- str_sub(pep, 3, -3)
+pct <- 25
+# 19
+str_length(pep)
+realScan<-getRealScan(scanNumber, ft2)
+```
+
+### anlyse precursor MZ range and plot precursor
+
+```{r}
+precursor <- getSipPrecursorSpectra(pep, element, pct/100, 2:7)
+precursor2 <- precursor@spectra[precursor@spectra$Charge == 2,]
+# 22
+max(precursor2$MZ) - min(precursor2$MZ)
+precursor3 <- precursor@spectra[precursor@spectra$Charge == 3,]
+# 14
+max(precursor3$MZ) - min(precursor3$MZ)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 13C Pct", pct, " charge 2-7.pdf"),
+  width = 25,
+  height = 5
+)
+
+precursor <- getSipPrecursorSpectra(pep, element, 0.5, 2:7)
+precursor2 <- precursor@spectra[precursor@spectra$Charge == 2, ]
+# window is 12 when we use 50% C13
+# we need to set larger isolation window when pct is close to 50%
+max(precursor2$MZ) - min(precursor2$MZ)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 13C Pct",  0.5, " charge 2-7.pdf"),
+  width = 25,
+  height = 5
+)
+
+precursor <- getSipPrecursorSpectra(pep, element, pct/100, charge)
+plot(precursor)
+ggsave(
+  paste0("top1 precursor 13C Pct", pct, " charge 3.pdf"),
+  width = 25,
+  height = 5
+)
+```
+
+### plot B Y ion and real scan
+
+```{r}
+BY <- getSipBYionSpectra(pep, element, pct / 100, 1,charge)
+p <-
+  plot(BY) + plotSipBYionLabel(BY)
+p
+ggsave(paste0("top1 B Y ion 13C Pct", pct, " .pdf"),
+       width = 25,
+       height = 5)
+
+plot(realScan)
+ggsave(paste0("top1 real 13C Pct", pct, " .pdf"),
+       width = 25,
+       height = 5)
+
+p <-
+  plot(BY) + plotRealScan(realScan) + plotSipBYionLabel(BY)
+p
+ggsave(paste0("top1 B Y ion 13C Pct", pct, " and real Scan.pdf"),
+       width = 25,
+       height = 7)
+```
+
+### plot B Y ion at 50% and real scan
+
+```{r}
+BY <- getSipBYionSpectra(pep, element, 0.5, 1)
+p <- plot(BY) + plotRealScan(realScan) + plotSipBYionLabel(BY)
+p
+ggsave("top1 B Y ion 13C Pct 0.50 and real scan.pdf",
+       width = 25,
+       height = 7)
+```
+
+### plot top 10 PSMs of pct 25
+
+```{r}
+psm <- psm[1:10, ]
+scanNumbers <- psm$scanNumbers
+proNames <- psm$proteinNames
+charges <- psm$parentCharges
+pep <- psm$originalPeptides
+pep <- str_sub(pep, 3, -3)
+ftFileNames <- rep("Pan_050922_09_Orbi_IonTrap",length(pep))
+realScans <- getRealScans(ft2, scanNumbers)
+pct <- rep(0.25, length(pep))
+element <- "C13"
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```
+
+### plot last 10 PSMs of pct 25
+
+```{r}
+psm <-
+  readSip(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.C13_25Pct.sip"
+  )
+psm <- psm$PSM
+psm <- arrange(psm, scores)
+psm <- psm[1:10, ]
+scanNumbers <- psm$scanNumbers
+proNames <- psm$proteinNames
+charges <- psm$parentCharges
+pep <- psm$originalPeptides
+pep <- str_sub(pep, 3, -3)
+ftFileNames <- rep("low quanlity",length(pep))
+realScans <- getRealScans(ft2, scanNumbers)
+pct <- rep(0.25, length(pep))
+element <- "C13"
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```
+
+### plot top 10 decoy psms
+
+```{r}
+psm <-
+  readSip(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.C13_25Pct.sip"
+  )
+psm <- psm$PSM
+psm$MassError <-
+  abs(psm$measuredParentMasses - psm$calculatedParentMasses)
+psm$MassError <- abs(psm$MassError - round(psm$MassError,0))
+psm$IsDecoy <- str_detect(psm$proteinNames, "Rev_")
+psm <- psm[psm$IsDecoy==TRUE,]
+psm <- arrange(psm, desc(scores))
+psm <- psm[1:10, ]
+scanNumbers <- psm$scanNumbers
+proNames <- psm$proteinNames
+charges <- psm$parentCharges
+pep <- psm$originalPeptides
+pep <- str_sub(pep, 3, -3)
+ftFileNames <- rep("Decoy",length(pep))
+realScans <- getRealScans(ft2, scanNumbers)
+pct <- rep(0.25, length(pep))
+element <- "C13"
+
+plotPSMs (
+  realScans,
+  charges,
+  element,
+  pct,
+  BYcharge = 1,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  ""
+)
+```

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotAAspectra.R
 \name{getRealScan}
 \alias{getRealScan}
-\title{Convert one scan in scans list of ft file to AAspectra class}
+\title{Convert one scan with charges=1 normalized by highest peak in scans list of ft file to AAspectra class}
 \usage{
 getRealScan(scanNumber, ft)
 }
@@ -15,7 +15,7 @@ getRealScan(scanNumber, ft)
 AAspectra object
 }
 \description{
-Convert one scan in scans list of ft file to AAspectra class
+Convert one scan with charges=1 normalized by highest peak in scans list of ft file to AAspectra class
 }
 \examples{
 a <- readAllScanMS2("demo.FT2")

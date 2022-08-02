@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotPSMs.R
 \name{getRealScans}
 \alias{getRealScans}
-\title{get real scans from scans list of one ft file}
+\title{get real scans  from scans list of one ft file}
 \usage{
 getRealScans(ft, scanNumbers)
 }
@@ -15,7 +15,7 @@ getRealScans(ft, scanNumbers)
 List of AAspectra objects of real scans
 }
 \description{
-get real scans from scans list of one ft file
+get real scans  from scans list of one ft file
 }
 \examples{
 scanNumbers <- 3:7

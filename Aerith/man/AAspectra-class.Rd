@@ -4,9 +4,6 @@
 \name{AAspectra-class}
 \alias{AAspectra-class}
 \title{AAspectra S4 object}
-\value{
-
-}
 \description{
 AAspectra S4 object
 }
@@ -23,8 +20,5 @@ AAspectra S4 object
 \examples{
 AAstr <- "KHRIP"
 spectra <- getPrecursorSpectra(AAstr,1:2)
-AAsOBJ <- new("AAspectra",
-spectra = spectra,
-charges = 1:2,
-AAstr = AAstr)
+class(spectra)
 }

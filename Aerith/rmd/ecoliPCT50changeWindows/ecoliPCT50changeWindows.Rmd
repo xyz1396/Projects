@@ -1,0 +1,84 @@
+---
+title: "ecoliPCT50changeWindows"
+author: "xyz"
+date: '2022-06-29'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+```
+
+### result of simulated windows of averagine 
+
+```{r}
+"#\tProtein_FDR = 0.0434353405726"
+"Proteins: 1033"
+"Average Pct: 49.0460195410339%"
+"Median Pct: 49.9615384615%"
+"Pct SD: 7.2132036011502%"
+plotProSipPct("Pan_052322_ChangeWindows.pro.cluster.txt")
+```
+
+```{r}
+psm <-
+  read.table(
+    "Pan_052322_X1.psm.txt",
+    header = T
+  )
+
+neutronMass <- 1.003355
+sipGoodWindows <- psm
+
+windows <-
+  sipGoodWindows$MeasuredParentMass - sipGoodWindows$CalculatedParentMass
+sign <- ifelse(windows > 0, 1, -1)
+windows <-
+  abs(windows) %/% neutronMass
+
+MassError <-
+  abs(sipGoodWindows$MeasuredParentMass - sipGoodWindows$CalculatedParentMass) %% neutronMass
+windows <-
+  ifelse(MassError >= 0.5,
+    windows + 1,
+    windows
+  )
+windows <- windows * sign
+sipGoodWindows$Windows <- windows
+
+MassError <-
+  ifelse(MassError >= 0.5,
+    neutronMass - MassError,
+    MassError
+  )
+sipGoodWindows$MassError <- MassError
+table(windows)
+```
+
+### mass windows of 25 pct of non-optimized windows
+
+```{r}
+psm <- read.table("/mnt/d/ubuntuShare/EcoliSIP/C13pct25orbit90min/sip/Pan_052322_X.psm.txt", header = T)
+table(round(psm$MeasuredParentMass - psm$CalculatedParentMass))
+```
+
+### mass windows of 50 pct of non-optimized windows
+
+```{r}
+psm <-
+  read.table(
+    "../ecoliPCT50orbit90min/Pan_052322_X1.psm.txt",
+    header = T
+  )
+table(round(psm$MeasuredParentMass - psm$CalculatedParentMass))
+
+# .sip file at 50 pct search
+top <- getFilterThresholdTopPSMs(".", 0.01, 1)
+psm <- top$topPSMs
+psm <- psm[psm$scores > 23, ]
+table(round(psm$measuredParentMass - psm$calculatedParentMass))
+```

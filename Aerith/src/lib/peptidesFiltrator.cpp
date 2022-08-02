@@ -114,7 +114,7 @@ void peptidesFiltrator::sortPeptideAllScore(const unordered_map<string, peptideI
 {
 	// convert unordered_map to vector of pairs
 	scoreDecoyPairs.clear();
-	for (auto pepIX : mPepMap)
+	for (auto &pepIX : mPepMap)
 	{
 		for (float score : pepIX.second.scores)
 		{

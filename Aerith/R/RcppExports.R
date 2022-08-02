@@ -2,11 +2,13 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' getUnfilteredPSMs
-#' @param workingPath a full path with .sip files in it
+#' @param sipPath a full path with .sip files in it
+#' @param ftPath a full path with .ft files in it
+#' @param topN store top N PSMs of each scan of one .FT file
 #' @return a dataframe of unique PSMs and whether it is decoy sequence
 #' @export
-getUnfilteredPSMs <- function(workingPath) {
-    .Call(`_Aerith_getUnfilteredPSMs`, workingPath)
+getUnfilteredPSMs <- function(sipPath, ftPath, topN) {
+    .Call(`_Aerith_getUnfilteredPSMs`, sipPath, ftPath, topN)
 }
 
 #' getUnfilteredPeptides
@@ -19,10 +21,47 @@ getUnfilteredPeptides <- function(workingPath) {
 
 #' getFilterThreshold
 #' @param workingPath a full path with .sip files in it
+#' @param OverallThreshold FDR thredhold of peptides
 #' @return a dataframe about filter threshold and FDR results
 #' @export
 getFilterThreshold <- function(workingPath, OverallThreshold) {
     .Call(`_Aerith_getFilterThreshold`, workingPath, OverallThreshold)
+}
+
+#' getFilterThresholdTopPSMs get filter threshold of top PSMs of each scan from multiple .sip file
+#' @param workingPath a full path with .sip files in it
+#' @param OverallThreshold FDR thredhold of peptides
+#' @param topN store top N PSMs of each scan of one .FT file
+#' @return a dataframe about filter threshold and FDR results
+#' @export
+getFilterThresholdTopPSMs <- function(workingPath, OverallThreshold, topN) {
+    .Call(`_Aerith_getFilterThresholdTopPSMs`, workingPath, OverallThreshold, topN)
+}
+
+#' generateOneCFG
+#' @param cfgPath a full path of .cfg file
+#' @param outPath a full path for .cfg file output
+#' @param element a string of element name, "N" for example
+#' @param pct a integer of element SIP abundance
+#' @param center a integer of mass window center
+#' @param width a integer of mass half window width
+#' @return a bool value if generate succeed or not
+#' @export
+generateOneCFG <- function(cfgPath, outPath, element, pct, center, width) {
+    .Call(`_Aerith_generateOneCFG`, cfgPath, outPath, element, pct, center, width)
+}
+
+#' generateCFGs
+#' @param cfgPath a full path of .cfg file
+#' @param outPath a full path for .cfg file output
+#' @param element a string of element name, "N" for example
+#' @param pct a integer of element SIP abundance
+#' @param center a integer of mass window center
+#' @param width a integer of mass half window width
+#' @return a bool value if generate succeed or not
+#' @export
+generateCFGs <- function(cfgPath, outPath, element) {
+    .Call(`_Aerith_generateCFGs`, cfgPath, outPath, element)
 }
 
 #' Simple peak calculator of natural isotopic distribution
@@ -32,6 +71,15 @@ precursor_peak_calculator <- function(AAstr) {
     .Call(`_Aerith_precursor_peak_calculator`, AAstr)
 }
 
+#' Simple residue peak calculator of user defined isotopic distribution of one residue
+#' @param residue residue name
+#' @param Atom "C13" or "N15"
+#' @param Prob its SIP abundance (0.0~1.0)
+#' @export
+residue_peak_calculator_DIY <- function(residue, Atom, Prob) {
+    .Call(`_Aerith_residue_peak_calculator_DIY`, residue, Atom, Prob)
+}
+
 #' Simple peak calculator of user defined isotopic distribution of one peptide
 #' @param AAstr a CharacterVector
 #' @param Atom a CharacterVector C13 or N15
@@ -39,6 +87,16 @@ precursor_peak_calculator <- function(AAstr) {
 #' @export
 precursor_peak_calculator_DIY <- function(AAstr, Atom, Prob) {
     .Call(`_Aerith_precursor_peak_calculator_DIY`, AAstr, Atom, Prob)
+}
+
+#' Simple peak calculator of user defined isotopic distribution of one peptide by averagine
+#' @param AAstr a CharacterVector of peptides
+#' @param Atom a CharacterVector C13 or N15
+#' @param Prob a NumericVector for its abundance
+#' @return a list of DataFrames of spectra
+#' @export
+precursor_peak_calculator_DIY_averagine <- function(AAstrs, Atom, Prob) {
+    .Call(`_Aerith_precursor_peak_calculator_DIY_averagine`, AAstrs, Atom, Prob)
 }
 
 #' peak calculator of B Y ione from of one peptide using user defined isotopic distribution
@@ -113,6 +171,26 @@ readSip <- function(sipFile) {
 #' @export
 readSips <- function(workingPath) {
     .Call(`_Aerith_readSips`, workingPath)
+}
+
+#' readFilesScansTopPSMs read each scan's top PSMs from multiple .sip files
+#' @param workingPath a full path with .sip files in it
+#' @param topN store top N PSMs of each scan of one .FT file
+#' @export
+readFilesScansTopPSMs <- function(workingPath, topN) {
+    .Call(`_Aerith_readFilesScansTopPSMs`, workingPath, topN)
+}
+
+#' scorePSM
+#' @param realMZ mz vector in MS2 scan
+#' @param realIntensity intensity vector in MS2 scan
+#' @param pepSeq a string of peptide
+#' @param Atom "C13" or "N15"
+#' @param Prob its SIP abundance (0.0~1.0)
+#' @return a score of this PSM
+#' @export
+scorePSM <- function(realMZ, realIntensity, realCharge, pepSeq, Atom, Prob) {
+    .Call(`_Aerith_scorePSM`, realMZ, realIntensity, realCharge, pepSeq, Atom, Prob)
 }
 
 #' Simple sum

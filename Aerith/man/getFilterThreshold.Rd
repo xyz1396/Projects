@@ -8,6 +8,8 @@ getFilterThreshold(workingPath, OverallThreshold)
 }
 \arguments{
 \item{workingPath}{a full path with .sip files in it}
+
+\item{OverallThreshold}{FDR thredhold of peptides}
 }
 \value{
 a dataframe about filter threshold and FDR results

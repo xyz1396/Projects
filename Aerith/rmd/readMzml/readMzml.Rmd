@@ -1,0 +1,28 @@
+---
+title: "readMzml"
+author: "xyz"
+date: '2022-05-20'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+ms <- "/mnt/d/work/202205/Pan_022822_X1.mzML"
+ms <- mzR::openMSfile(ms)
+meta <- mzR::header(ms)
+meta <- meta[meta$msLevel == 1, ]
+peaks <- mzR::peaks(ms)
+
+meta <- mzR::header(ms)
+meta <- meta[meta$msLevel == 2, ]
+```
+
+
+```{r}
+a <- readMzmlMS1("/mnt/d/work/202205/Pan_022822_X1.mzML")
+b <- readMzmlMS2("/mnt/d/work/202205/Pan_022822_X1.mzML")
+```
+

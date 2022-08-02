@@ -1,0 +1,32 @@
+---
+title: "ecoliPCT50iso15"
+author: "xyz"
+date: '2022-06-23'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(Aerith)
+```
+
+[1] "#\tProtein_FDR = 0.0334788937409"
+[1] "Proteins: 701"
+[1] "Average Pct: 50.8025155555133%"
+[1] "Median Pct: 51.0588235294%"
+[1] "Pct SD: 6.97388259891054%"
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_052322_X13_iso15.C13.pro.cluster.txt"
+  )
+p
+ggsave("ecoliPCT50iso08SIPresult.pdf",
+       width = 8,
+       height = 6)
+```

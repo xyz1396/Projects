@@ -1,0 +1,70 @@
+---
+title: "differentIsolationWindowSize"
+author: "xyz"
+date: '2022-07-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+```
+
+0.8
+
+FDR: 0.03
+Proteins: 570
+Average Pct: 49.695%
+Median Pct: 50.167%
+Pct SD: 7.838%
+
+1.5
+
+FDR: 0.035
+Proteins: 708
+Average Pct: 50.153%
+Median Pct: 50.167%
+Pct SD: 7.789%
+
+3
+
+FDR: 0.03
+Proteins: 659
+Average Pct: 49.608%
+Median Pct: 50.077%
+Pct SD: 6.912%
+
+5
+
+FDR: 0.035
+Proteins: 861
+Average Pct: 49.543%
+Median Pct: 50%
+Pct SD: 6.376%
+
+7
+
+FDR: 0.026
+Proteins: 640
+Average Pct: 49.437%
+Median Pct: 49.667%
+Pct SD: 5.722%
+
+```{r}
+xTitle <- ggplot2::xlab(expression(""^13*"C"*" (%)"))
+plotProSipPct("Pan_052322_X13_iso08.C13.pro.cluster.txt") + xTitle
+ggsave("iso08.pdf",width = 8,height = 6)
+plotProSipPct("Pan_052322_X13_iso15.C13.pro.cluster.txt") + xTitle
+ggsave("iso15.pdf",width = 8,height = 6)
+plotProSipPct("Pan_052322_X14_iso3.C13.pro.cluster.txt") + xTitle
+ggsave("iso3.pdf",width = 8,height = 6)
+plotProSipPct("Pan_052322_X14.iso5.C13.pro.cluster.txt") + xTitle
+ggsave("iso5.pdf",width = 8,height = 6)
+plotProSipPct("Pan_052322_X14_iso7.C13.pro.cluster.txt") + xTitle
+ggsave("iso7.pdf",width = 8,height = 6)
+```
+
+

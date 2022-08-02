@@ -3,6 +3,9 @@ case $1 in
 "clean")
 	rm -r ~/.R
 	;;
+"cleanProject")
+	rm -r .Rproj.user/*
+	;;
 *)
 	mkdir ~/.R
 	touch ~/.R/Makevars

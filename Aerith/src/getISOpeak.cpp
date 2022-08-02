@@ -1,57 +1,8 @@
-#include "lib/proNovoConfig.h"
+#include "lib/initSIP.h"
+#include "lib/averagine.h"
 #include <Rcpp.h>
 
 using namespace Rcpp;
-
-string get_extdata()
-{
-	Environment base("package:base");
-	Function sys_file = base["system.file"];
-	StringVector resVector =
-		sys_file("extdata", "SiprosConfigN15SIP.cfg", _["package"] = "Aerith");
-	string res = as<std::string>(resVector);
-	return res;
-}
-
-void computeResidueMassIntensityAgain(const string Atom_str, double Prob_d)
-{
-	// change Prob
-	if (Atom_str == "C13")
-	{
-		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[0].vProb[0] =
-			1.0 - Prob_d;
-		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[0].vProb[1] =
-			Prob_d;
-	}
-	else if (Atom_str == "N15")
-	{
-		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[3].vProb[0] =
-			1.0 - Prob_d;
-		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[3].vProb[1] =
-			Prob_d;
-	}
-	else
-		Rcerr << "this element is not support" << endl;
-	// compute residue mass and prob again
-	map<string, vector<int>>::iterator ResidueIter;
-	IsotopeDistribution tempIsotopeDistribution;
-	for (ResidueIter =
-			 ProNovoConfig::configIsotopologue.mResidueAtomicComposition.begin();
-		 ResidueIter !=
-		 ProNovoConfig::configIsotopologue.mResidueAtomicComposition.end();
-		 ResidueIter++)
-	{
-		if (!ProNovoConfig::configIsotopologue.computeIsotopicDistribution(
-				ResidueIter->second, tempIsotopeDistribution))
-		{
-			Rcerr << "ERROR: cannot calculate the isotopic distribution for residue "
-				  << ResidueIter->first << endl;
-		}
-		ProNovoConfig::configIsotopologue
-			.vResidueIsotopicDistribution[ResidueIter->first] =
-			tempIsotopeDistribution;
-	}
-}
 
 //' Simple peak calculator of natural isotopic distribution
 //' @param AAstr a CharacterVector
@@ -67,6 +18,33 @@ DataFrame precursor_peak_calculator(CharacterVector AAstr)
 	string AAstr_str = as<std::string>(AAstr);
 	ProNovoConfig::configIsotopologue.computeIsotopicDistribution(AAstr_str,
 																  myIso);
+	DataFrame df =
+		DataFrame::create(Named("Mass") = myIso.vMass, _["Prob"] = myIso.vProb);
+	return df;
+}
+
+//' Simple residue peak calculator of user defined isotopic distribution of one residue
+//' @param residue residue name
+//' @param Atom "C13" or "N15"
+//' @param Prob its SIP abundance (0.0~1.0)
+//' @export
+// [[Rcpp::export]]
+DataFrame residue_peak_calculator_DIY(String residue, String Atom,
+									  double Prob)
+{
+	if (Prob < 0 || Prob > 1)
+		Rcout << "Wrong isotopic percentage" << endl;
+	// read default config
+	string config = get_extdata();
+	ProNovoConfig::setFilename(config);
+	// compute residue mass and prob again
+	computeResidueMassIntensityAgain(Atom, Prob);
+	IsotopeDistribution myIso;
+	auto residueIter = ProNovoConfig::configIsotopologue.vResidueIsotopicDistribution.find(residue);
+	if (residueIter != ProNovoConfig::configIsotopologue.vResidueIsotopicDistribution.end())
+		myIso = residueIter->second;
+	else
+		Rcout << "Rediue not found!" << endl;
 	DataFrame df =
 		DataFrame::create(Named("Mass") = myIso.vMass, _["Prob"] = myIso.vProb);
 	return df;
@@ -103,6 +81,57 @@ DataFrame precursor_peak_calculator_DIY(CharacterVector AAstr, CharacterVector A
 	DataFrame df =
 		DataFrame::create(Named("Mass") = myIso.vMass, _["Prob"] = myIso.vProb);
 	return df;
+}
+
+//' Simple peak calculator of user defined isotopic distribution of one peptide by averagine
+//' @param AAstr a CharacterVector of peptides
+//' @param Atom a CharacterVector C13 or N15
+//' @param Prob a NumericVector for its abundance
+//' @return a list of DataFrames of spectra
+//' @export
+// [[Rcpp::export]]
+List precursor_peak_calculator_DIY_averagine(StringVector AAstrs, String Atom,
+											 double Prob)
+{
+	bool goodInput = true;
+	if (Prob < 0 || Prob > 1)
+	{
+		Rcout << "Wrong isotopic percentage!" << endl;
+		goodInput = false;
+	}
+	char cAtom;
+	if (Atom == "C13")
+		cAtom = 'C';
+	else if (Atom == "N15")
+		cAtom = 'N';
+	else
+	{
+		goodInput = false;
+		cout << Atom.get_cstring() << " element not support!" << endl;
+	}
+	List spectraList(AAstrs.size());
+	if (goodInput)
+	{
+		// read default config
+		string config = get_extdata();
+		ProNovoConfig::setFilename(config);
+		averagine mAveragine(ProNovoConfig::getMinPeptideLength(),
+							 ProNovoConfig::getMaxPeptideLength());
+		mAveragine.changeAtomSIPabundance(cAtom, Prob);
+		mAveragine.calAveraginePepAtomCounts();
+		mAveragine.calAveraginePepSIPdistributions();
+		
+		IsotopeDistribution mSIP;
+		DataFrame df;
+		for (int i = 0; i < AAstrs.size(); i++)
+		{
+			mAveragine.calPrecusorIsotopeDistribution(as<std::string>(AAstrs(i)), mSIP);
+			df =
+				DataFrame::create(Named("Mass") = move(mSIP.vMass), _["Prob"] = move(mSIP.vProb));
+			spectraList[i] = move(df);
+		}
+	}
+	return spectraList;
 }
 
 //' peak calculator of B Y ione from of one peptide using user defined isotopic distribution

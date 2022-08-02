@@ -4,10 +4,14 @@
 \alias{getUnfilteredPSMs}
 \title{getUnfilteredPSMs}
 \usage{
-getUnfilteredPSMs(workingPath)
+getUnfilteredPSMs(sipPath, ftPath, topN)
 }
 \arguments{
-\item{workingPath}{a full path with .sip files in it}
+\item{sipPath}{a full path with .sip files in it}
+
+\item{ftPath}{a full path with .ft files in it}
+
+\item{topN}{store top N PSMs of each scan of one .FT file}
 }
 \value{
 a dataframe of unique PSMs and whether it is decoy sequence

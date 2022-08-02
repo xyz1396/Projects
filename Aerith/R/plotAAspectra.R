@@ -4,16 +4,12 @@
 #' @slot charges numericVector.
 #' @slot AAstr character.
 #'
-#' @return
 #' @export
 #'
 #' @examples
 #' AAstr <- "KHRIP"
 #' spectra <- getPrecursorSpectra(AAstr,1:2)
-#' AAsOBJ <- new("AAspectra",
-#' spectra = spectra,
-#' charges = 1:2,
-#' AAstr = AAstr)
+#' class(spectra)
 setClass("AAspectra",
          slot = c(
            spectra = "data.frame",
@@ -138,7 +134,7 @@ getSipBYionSpectra <-
     return(AAsOBJ)
   }
 
-#' Convert one scan in scans list of ft file to AAspectra class
+#' Convert one scan with charges=1 normalized by highest peak in scans list of ft file to AAspectra class
 #'
 #' @param scanNumber ScanNumber of one scan
 #' @param ft Scans list of ft file
@@ -160,6 +156,35 @@ getRealScan <- function(scanNumber, ft)
     Kind = "Real",
     MZ = scan$peaks$mz,
     Charge = 1
+  )
+  AAsOBJ <- new("AAspectra",
+                spectra = BYreal,
+                charges = 1,
+                AAstr = "Unknown")
+  return(AAsOBJ)
+}
+
+#' Convert one scan in scans with real charges list of ft file to AAspectra class
+#'
+#' @param scanNumber ScanNumber of one scan
+#' @param ft Scans list of ft file
+#'
+#' @return AAspectra object
+#' @export
+#'
+#' @examples
+#' a <- readAllScanMS2("demo.FT2")
+#' b <- getRealScanWithCharge(18, a)
+#' plot(b)
+getRealScanWithCharge <- function(scanNumber, ft)
+{
+  scan <- ft[[paste0("", scanNumber)]]
+  BYreal <- data.frame(
+    Mass = scan$peaks$mz,
+    Prob = scan$peaks$intensity,
+    Kind = "Real",
+    MZ = scan$peaks$mz,
+    Charge = scan$peaks$charge
   )
   AAsOBJ <- new("AAspectra",
                 spectra = BYreal,

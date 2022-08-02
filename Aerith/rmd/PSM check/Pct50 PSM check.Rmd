@@ -32,6 +32,22 @@ psm <- arrange(psm, abs(MassErrorDa) ,desc(Score))
 ft2 <- readAllScanMS2("/mnt/d/work/202202/testRAW/201019_CP_6801_E50.FT2")
 ```
 
+### simulated precursor
+
+```{r}
+pep <- "VTPDEVSPVTLGDNLTSNR"
+a <- getSipPrecursorSpectra(pep, "C13", 1.07 / 100, 2)
+plot(a) + xlim(1007, 1013) + ggplot2::geom_linerange(size = 0.5)
+ggsave("simulated precursor at 1.07pct 13C .pdf",
+       width = 4,
+       height = 3)
+a <- getSipPrecursorSpectra(pep, "C13", 25 / 100, 2)
+plot(a) + xlim(1010, 1029) + ggplot2::geom_linerange(size = 0.5)
+ggsave("simulated precursor at 25pct 13C .pdf",
+       width = 4,
+       height = 3)
+```
+
 ### read the highest PSM
 
 ```{r}

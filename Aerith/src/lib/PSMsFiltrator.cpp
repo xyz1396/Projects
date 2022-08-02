@@ -1,33 +1,20 @@
 #include "PSMsFiltrator.h"
 
-PSMsFiltrator::PSMsFiltrator(const vector<sipPSM> &sipPSMs, float mFDRthreshold)
-	: FDRthreshold(mFDRthreshold)
+PSMsFiltrator::PSMsFiltrator(const string &msipPath, const string &mftPath)
+	: sipPath(msipPath), ftPath(mftPath)
 {
-	for (sipPSM psm : sipPSMs)
-	{
-		for (size_t i = 0; i < psm.scanNumbers.size(); i++)
-		{
-			string psmID = psm.fileName + to_string(psm.scanNumbers[i]);
-			auto psmIX = PSMsMap.find(psmID);
-			if (psmIX != PSMsMap.end())
-				fillPSMinfo(psmIX->second, psm, i);
-			else
-			{
-				PSMinfo temp;
-				temp.ftFileName = psm.fileName;
-				temp.scanNumber = psm.scanNumbers[i];
-				fillPSMinfo(temp, psm, i);
-				PSMsMap.insert({psmID, temp});
-			}
-		}
-	}
+}
+
+PSMsFiltrator::PSMsFiltrator(const string &workPath)
+	: sipPath(workPath), ftPath(workPath)
+{
 }
 
 PSMsFiltrator::~PSMsFiltrator()
 {
 }
 
-void PSMsFiltrator::splitString(const string mString)
+void PSMsFiltrator::splitString(const string &mString)
 {
 	string sep = ",";
 	size_t start = 0;
@@ -42,51 +29,134 @@ void PSMsFiltrator::splitString(const string mString)
 	tokens.push_back(mString.substr(start));
 }
 
-pair<int, bool> PSMsFiltrator::detectProDecoy(const string &proteinName)
+tuple<int, bool, string> PSMsFiltrator::detectProDecoy(const string &proteinName)
 {
+	string targetName, decoyName;
+	int targetCount = 0, decoyCount = 0;
+	bool isDecoy = true;
 	// remove {} out of protein names then split it
 	splitString(proteinName.substr(1, proteinName.size() - 2));
 	// if one protein is not decoy the peptide is not decoy
 	for (string token : tokens)
 	{
 		if (token.substr(0, 4) != "Rev_")
-			return {tokens.size(), false};
-	}
-	return {tokens.size(), true};
-}
-
-void PSMsFiltrator::fillPSMinfo(PSMinfo &mPSMinfo, const sipPSM &psm, const int psmIX)
-{
-	for (size_t i = 0; i < 5; i++)
-	{
-		if (psm.scores[psmIX] > mPSMinfo.bestScores[i])
 		{
-			mPSMinfo.bestScores[i] = psm.scores[psmIX];
-			mPSMinfo.calculatedParentMasses[i] = psm.calculatedParentMasses[psmIX];
-			mPSMinfo.identifiedPepSeqs[i] = psm.identifiedPeptides[psmIX];
-			tie(mPSMinfo.proCounts[i], mPSMinfo.isDecoys[i]) = detectProDecoy(psm.proteinNames[psmIX]);
-			mPSMinfo.measuredParentMasses[i] = psm.measuredParentMasses[psmIX];
-			mPSMinfo.originalPepSeqs[i] = psm.originalPeptides[psmIX];
-			mPSMinfo.parentCharges[i] = psm.parentCharges[psmIX];
-			mPSMinfo.searchNames[i] = psm.searchName;
-			mPSMinfo.proNames[i] = psm.proteinNames[psmIX];
-			mPSMinfo.pepLengths[i] = psm.originalPeptides[psmIX].length() - 4;
-			break;
+			isDecoy = false;
+			targetName += token + "\t";
+			targetCount++;
+		}
+		else
+		{
+			decoyName += token + "\t";
+			decoyCount++;
 		}
 	}
+	decoyName.pop_back();
+	targetName.pop_back();
+	if (isDecoy)
+		return {decoyCount, true, decoyName};
+	else
+		return {targetCount, false, targetName};
 }
 
-void PSMsFiltrator::getRentionTime(string &workPath) {}
-void PSMsFiltrator::writePercolatorTSV() {}
-void PSMsFiltrator::readPercolatorTSV() {}
-void PSMsFiltrator::fillPeptidesCharge() {}
-void PSMsFiltrator::sortPeptideAllScore() {}
-
-tuple<size_t, size_t, float> PSMsFiltrator::getDecoyCountScoreThreshold()
+float PSMsFiltrator::getRentionTime()
 {
-	return {0, 0, 0};
+	return 0;
 }
 
-void PSMsFiltrator::filterPSMsMap() {}
-void PSMsFiltrator::precursorIsotopicMassesIntensities(string &workPath) {}
-void PSMsFiltrator::writeFilteredPSMs() {}
+int PSMsFiltrator::getPct(const string &searchName)
+{
+	string pct;
+	for (size_t i = 0; i < searchName.length(); i++)
+	{
+		if (searchName[i] == '_')
+		{
+			pct = searchName.substr(i + 1, 2);
+			if (pct[1] < '0' || pct[1] > '9')
+				pct.pop_back();
+			return (stoi(pct));
+		}
+	}
+	return (0);
+}
+
+tuple<int, string, string> PSMsFiltrator::getRealPep(const string &pepSeq)
+{
+	int length = pepSeq.length() - 2;
+	int start = 1;
+	string flankN = "n", flankC = "c";
+	if (pepSeq[0] != '[')
+	{
+		length--;
+		start++;
+		flankN = pepSeq[0];
+	}
+	if (pepSeq.back() != ']')
+	{
+		length--;
+		flankC = pepSeq.back();
+	}
+	string realPep = pepSeq.substr(start, length);
+	return {length, realPep, flankN + "." + realPep + "." + flankC};
+}
+
+pair<vector<double>, vector<double>> PSMsFiltrator::getPrecursorIsotopicPeak()
+{
+	return pair<vector<double>, vector<double>>{};
+}
+
+sipPSMinfo PSMsFiltrator::convertFilesScansTopPSMs(
+	const unordered_map<string, unordered_map<int, vector<topPSM>>> &filesScansTopPSMs)
+{
+	// converted from filesScansTopPSMs
+	sipPSMinfo topPSMs;
+	for (auto &fileIX : filesScansTopPSMs)
+	{
+		for (auto &scanIX : fileIX.second)
+		{
+			for (size_t i = 0; i < scanIX.second.size(); i++)
+			{
+				topPSMs.fileNames.push_back(fileIX.first);
+				topPSMs.scanNumbers.push_back(scanIX.first);
+				topPSMs.parentCharges.push_back(scanIX.second[i].parentCharge);
+				topPSMs.measuredParentMasses.push_back(scanIX.second[i].measuredParentMass);
+				topPSMs.calculatedParentMasses.push_back(scanIX.second[i].calculatedParentMass);
+				topPSMs.searchNames.push_back(scanIX.second[i].searchName);
+				topPSMs.scores.push_back(scanIX.second[i].score);
+				topPSMs.identifiedPeptides.push_back(scanIX.second[i].identifiedPeptide);
+				topPSMs.originalPeptides.push_back(scanIX.second[i].originalPeptide);
+				topPSMs.proteinNames.push_back(scanIX.second[i].proteinName);
+				topPSMs.retentionTimes.push_back(getRentionTime());
+				int proteinCount;
+				bool isDecoy;
+				string trimedProName;
+				tie(proteinCount, isDecoy, trimedProName) = detectProDecoy(scanIX.second[i].proteinName);
+				topPSMs.isDecoys.push_back(isDecoy);
+				topPSMs.proCounts.push_back(proteinCount);
+				topPSMs.trimedProteinNames.push_back(trimedProName);
+				topPSMs.ranks.push_back(i + 1);
+				int pct = getPct(scanIX.second[i].searchName);
+				topPSMs.pcts.push_back(pct);
+				int pepLen;
+				string realPep, formatedPep;
+				tie(pepLen, realPep, formatedPep) = getRealPep(scanIX.second[i].originalPeptide);
+				topPSMs.pepLengths.push_back(pepLen);
+				topPSMs.realPepSeqs.push_back(realPep);
+				topPSMs.formatedPepSeqs.push_back(formatedPep);
+				topPSMs.psmIDs.push_back(fileIX.first + "_" +
+										 to_string(scanIX.first) + "_" +
+										 scanIX.second[i].identifiedPeptide + "_" + to_string(pct));
+				// cout << proteinCount << endl;
+			}
+		}
+	}
+	return topPSMs;
+}
+
+void PSMsFiltrator::writePercolatorTSV()
+{
+}
+
+void PSMsFiltrator::readPercolatorTSV()
+{
+}

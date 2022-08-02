@@ -27,6 +27,9 @@ public:
 	double getLowestMass();
 
 	void filterProbCutoff(double dProCutoff);
+	// filtering topN highest isotopic peak when SIP peaks is too wide 
+	// 50% 13C labeled for example
+	void filterProbCutoff(int topN);
 
 	// print out the isotoptic distribution
 	// this is mainly used for debuging
@@ -82,6 +85,11 @@ public:
 	map<string, vector<int>> mResidueAtomicComposition;
 	vector<IsotopeDistribution> vAtomIsotopicDistribution;
 	map<string, IsotopeDistribution> vResidueIsotopicDistribution;
+
+	// get topN filter treshold by isolation window width and precursor SIP distribution
+	int getFilterThresh(const float isolationWindow, const IsotopeDistribution &mDistribution);
+	// for isotopic peak filtering at abundance close to 50%
+	void filterHighIntensity(const int topN, vector<IsotopeDistribution> &vIonDistribution);
 
 private:
 	// implementation of max and min

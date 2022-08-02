@@ -95,7 +95,6 @@ void sipFileReader::readOneFile(string sipFileName)
     {
         cout << sipFileName << " does not exists" << endl;
     }
-    
 }
 
 void sipFileReader::readAllFiles()
@@ -106,4 +105,92 @@ void sipFileReader::readAllFiles()
         readOneFile(sipFileName);
         sipPSMs.push_back(currentSipPSM);
     }
+}
+
+void sipFileReader::readAllFilesTopPSMs()
+{
+
+    for (string sipFileName : sipFileNames)
+    {
+        currentSipPSM = sipPSM();
+        readOneFile(sipFileName);
+        auto fileIX = filesScansTopPSMs.find(currentSipPSM.fileName);
+        // if not find the fileName, add fileName-fileScansTopPSMs pair
+        if (fileIX == filesScansTopPSMs.end())
+        {
+            unordered_map<int, vector<topPSM>> fileScansTopPSMs;
+            fileIX = filesScansTopPSMs.insert({currentSipPSM.fileName, fileScansTopPSMs}).first;
+        }
+        for (size_t i = 0; i < currentSipPSM.scanNumbers.size(); i++)
+        {
+            auto scanIX = fileIX->second.find(currentSipPSM.scanNumbers[i]);
+            if (scanIX == fileIX->second.end())
+            {
+                vector<topPSM> scanTopPSMs;
+                scanTopPSMs.reserve(topN);
+                scanIX = fileIX->second.insert({currentSipPSM.scanNumbers[i], scanTopPSMs}).first;
+            }
+            fillScanTopPSMs(scanIX->second, i);
+        }
+    }
+}
+
+void sipFileReader::fillScanTopPSMs(vector<topPSM> &topPSMs, const int psmIX)
+{
+    size_t i = 0;
+    while (i < topPSMs.size())
+    {
+        if (currentSipPSM.scores[psmIX] > topPSMs[i].score)
+        {
+            topPSMs.insert(topPSMs.begin() + i, topPSM({currentSipPSM.parentCharges[psmIX],
+                                                        currentSipPSM.measuredParentMasses[psmIX],
+                                                        currentSipPSM.calculatedParentMasses[psmIX],
+                                                        currentSipPSM.searchName,
+                                                        currentSipPSM.scores[psmIX],
+                                                        currentSipPSM.identifiedPeptides[psmIX],
+                                                        currentSipPSM.originalPeptides[psmIX],
+                                                        currentSipPSM.proteinNames[psmIX]}));
+            break;
+        }
+        i++;
+    }
+    // if insert fail and topPSMs has less than topN PSMs
+    if (i == topPSMs.size() && i < topN)
+        topPSMs.push_back(topPSM({currentSipPSM.parentCharges[psmIX],
+                                  currentSipPSM.measuredParentMasses[psmIX],
+                                  currentSipPSM.calculatedParentMasses[psmIX],
+                                  currentSipPSM.searchName,
+                                  currentSipPSM.scores[psmIX],
+                                  currentSipPSM.identifiedPeptides[psmIX],
+                                  currentSipPSM.originalPeptides[psmIX],
+                                  currentSipPSM.proteinNames[psmIX]}));
+    // if insert succeed and topPSMs already has topN PSMs
+    if (topPSMs.size() > topN)
+        topPSMs.pop_back();
+}
+
+sipPSM sipFileReader::convertFilesScansTopPSMs()
+{
+    // converted from filesScansTopPSMs
+    sipPSM topPSMs;
+    for (auto &fileIX : filesScansTopPSMs)
+    {
+        for (auto &scanIX : fileIX.second)
+        {
+            for (size_t i = 0; i < scanIX.second.size(); i++)
+            {
+                topPSMs.fileNames.push_back(fileIX.first);
+                topPSMs.scanNumbers.push_back(scanIX.first);
+                topPSMs.parentCharges.push_back(scanIX.second[i].parentCharge);
+                topPSMs.measuredParentMasses.push_back(scanIX.second[i].measuredParentMass);
+                topPSMs.calculatedParentMasses.push_back(scanIX.second[i].calculatedParentMass);
+                topPSMs.searchNames.push_back(scanIX.second[i].searchName);
+                topPSMs.scores.push_back(scanIX.second[i].score);
+                topPSMs.identifiedPeptides.push_back(scanIX.second[i].identifiedPeptide);
+                topPSMs.originalPeptides.push_back(scanIX.second[i].originalPeptide);
+                topPSMs.proteinNames.push_back(scanIX.second[i].proteinName);
+            }
+        }
+    }
+    return topPSMs;
 }

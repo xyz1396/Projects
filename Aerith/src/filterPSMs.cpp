@@ -3,69 +3,37 @@
 using namespace Rcpp;
 
 //' getUnfilteredPSMs
-//' @param workingPath a full path with .sip files in it
+//' @param sipPath a full path with .sip files in it
+//' @param ftPath a full path with .ft files in it
+//' @param topN store top N PSMs of each scan of one .FT file
 //' @return a dataframe of unique PSMs and whether it is decoy sequence
 //' @export
 // [[Rcpp::export]]
-DataFrame getUnfilteredPSMs(CharacterVector workingPath)
+DataFrame getUnfilteredPSMs(String sipPath, String ftPath, size_t topN)
 {
-    sipFileReader reader(as<string>(workingPath));
-    reader.readAllFiles();
-    PSMsFiltrator filtrator(reader.sipPSMs, 0.01);
-    vector<string> psmIDs;
-    vector<string> ftFileNames;
-    vector<int> scanNumbers;
-    vector<float> retentionTimes;
-    vector<float> bestScores;
-    vector<int> parentCharges;
-    vector<string> searchNames;
-    vector<bool> isDecoys;
-    vector<double> measuredParentMasses;
-    vector<double> calculatedParentMasses;
-    vector<string> identifiedPepSeqs;
-    vector<string> originalPepSeqs;
-    vector<int> pepLengths;
-    vector<string> proNames;
-    vector<int> proCounts;
-    for (auto psmIX : filtrator.PSMsMap)
-    {
-        for (size_t i = 0; i < 5; i++)
-        {
-            if (psmIX.second.bestScores[i] > 0)
-            {
-                psmIDs.push_back(psmIX.first);
-                ftFileNames.push_back(psmIX.second.ftFileName);
-                scanNumbers.push_back(psmIX.second.scanNumber);
-                retentionTimes.push_back(psmIX.second.retentionTime);
-                bestScores.push_back(psmIX.second.bestScores[i]);
-                parentCharges.push_back(psmIX.second.parentCharges[i]);
-                searchNames.push_back(psmIX.second.searchNames[i]);
-                isDecoys.push_back(psmIX.second.isDecoys[i]);
-                measuredParentMasses.push_back(psmIX.second.measuredParentMasses[i]);
-                calculatedParentMasses.push_back(psmIX.second.calculatedParentMasses[i]);
-                identifiedPepSeqs.push_back(psmIX.second.identifiedPepSeqs[i]);
-                originalPepSeqs.push_back(psmIX.second.originalPepSeqs[i]);
-                pepLengths.push_back(psmIX.second.pepLengths[i]);
-                proNames.push_back(psmIX.second.proNames[i]);
-                proCounts.push_back(psmIX.second.proCounts[i]);
-            }
-            else
-                break;
-        }
-    }
-    return DataFrame::create(Named("psmIDs") = move(psmIDs),
-                             _("ftFileNames") = move(ftFileNames),
-                             _["scanNumbers"] = move(scanNumbers),
-                             _["retentionTimes"] = move(retentionTimes),
-                             _["bestScores"] = move(bestScores),
-                             _["parentCharges"] = move(parentCharges),
-                             _["searchNames"] = move(searchNames),
-                             _["isDecoys"] = move(isDecoys),
-                             _["measuredParentMasses"] = move(measuredParentMasses),
-                             _["calculatedParentMasses"] = move(calculatedParentMasses),
-                             _["identifiedPepSeqs"] = move(identifiedPepSeqs),
-                             _["originalPepSeqs"] = move(originalPepSeqs),
-                             _["pepLengths"] = move(pepLengths),
-                             _["proNames"] = move(proNames),
-                             _["proCounts"] = move(proCounts));
+    sipFileReader reader(sipPath);
+    reader.topN = topN;
+    reader.readAllFilesTopPSMs();
+    PSMsFiltrator filtrator(sipPath, ftPath);
+    sipPSMinfo msipPSMinfo = filtrator.convertFilesScansTopPSMs(reader.filesScansTopPSMs);
+    return DataFrame::create(Named("psmIDs") = move(msipPSMinfo.psmIDs),
+                             _("ftFileNames") = move(msipPSMinfo.fileNames),
+                             _["scanNumbers"] = move(msipPSMinfo.scanNumbers),
+                             _["retentionTimes"] = move(msipPSMinfo.retentionTimes),
+                             _["scores"] = move(msipPSMinfo.scores),
+                             _["ranks"] = move(msipPSMinfo.ranks),
+                             _["parentCharges"] = move(msipPSMinfo.parentCharges),
+                             _["pcts"] = move(msipPSMinfo.pcts),
+                             _["searchNames"] = move(msipPSMinfo.searchNames),
+                             _["isDecoys"] = move(msipPSMinfo.isDecoys),
+                             _["measuredParentMasses"] = move(msipPSMinfo.measuredParentMasses),
+                             _["calculatedParentMasses"] = move(msipPSMinfo.calculatedParentMasses),
+                             _["identifiedPepSeqs"] = move(msipPSMinfo.identifiedPeptides),
+                             _["originalPepSeqs"] = move(msipPSMinfo.originalPeptides),
+                             _["realPepSeqs"] = move(msipPSMinfo.realPepSeqs),
+                             _["formatedPepSeqs"] = move(msipPSMinfo.formatedPepSeqs),
+                             _["pepLengths"] = move(msipPSMinfo.pepLengths),
+                             _["proNames"] = move(msipPSMinfo.proteinNames),
+                             _["trimedProteinNames"] = move(msipPSMinfo.trimedProteinNames),
+                             _["proCounts"] = move(msipPSMinfo.proCounts));
 }

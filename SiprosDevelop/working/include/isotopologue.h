@@ -78,6 +78,11 @@ public:
 	IsotopeDistribution multiply(const IsotopeDistribution &distribution0, int count);
 	void shiftMass(IsotopeDistribution &distribution0, double dMass);
 
+	// variables for this isotopologue
+	map<string, vector<int>> mResidueAtomicComposition;
+	vector<IsotopeDistribution> vAtomIsotopicDistribution;
+	map<string, IsotopeDistribution> vResidueIsotopicDistribution;
+
 private:
 	// implementation of max and min
 	double maximum(double a, double b)
@@ -102,11 +107,6 @@ private:
 
 	// the number of natural CHONPS and enriched CHONPS
 	unsigned int AtomNumber;
-
-	// variables for this isotopologue
-	map<string, vector<int>> mResidueAtomicComposition;
-	vector<IsotopeDistribution> vAtomIsotopicDistribution;
-	map<string, IsotopeDistribution> vResidueIsotopicDistribution;
 };
 
-#endif //ISOTOPOLOGUE_H
+#endif // ISOTOPOLOGUE_H

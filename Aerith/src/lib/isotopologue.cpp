@@ -65,6 +65,25 @@ void IsotopeDistribution::filterProbCutoff(double dProbCutoff)
 	}
 }
 
+void IsotopeDistribution::filterProbCutoff(int topN)
+{
+	vector<double> vMassCopy = vMass;
+	vector<double> vProbCopy = vProb;
+	vector<double> vProbForSort = vProb;
+	nth_element(vProbForSort.begin(), vProbForSort.end() - topN, vProbForSort.end());
+	double dProbCutoff = *(vProbForSort.end() - topN);
+	vMass.clear();
+	vProb.clear();
+	for (unsigned int i = 0; i < vProbCopy.size(); ++i)
+	{
+		if (vProbCopy[i] >= dProbCutoff)
+		{
+			vMass.push_back(vMassCopy[i]);
+			vProb.push_back(vProbCopy[i]);
+		}
+	}
+}
+
 double IsotopeDistribution::getLowestMass()
 {
 	return *min_element(vMass.begin(), vMass.end());
@@ -308,6 +327,15 @@ bool Isotopologue::computeIsotopicDistribution(string sSequence, IsotopeDistribu
 	myIsotopeDistribution = sumDistribution;
 
 	return true;
+}
+
+int Isotopologue::getFilterThresh(const float isolationWindow, const IsotopeDistribution &mDistribution)
+{
+	return 0;
+}
+
+void Isotopologue::filterHighIntensity(const int topN, vector<IsotopeDistribution> &vIonDistribution)
+{
 }
 
 bool Isotopologue::computeProductIon(string sSequence,
@@ -666,7 +694,7 @@ IsotopeDistribution Isotopologue::sum(const IsotopeDistribution &distribution0, 
 		sumDistribution.vProb.push_back(currentProb);
 	}
 
-	//prune small probabilities
+	// prune small probabilities
 	vector<double>::iterator iteProb = sumDistribution.vProb.begin();
 	vector<double>::iterator iteMass = sumDistribution.vMass.begin();
 	while (iteProb != sumDistribution.vProb.end())

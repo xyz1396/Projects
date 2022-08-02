@@ -1,0 +1,96 @@
+---
+title: "scoreFunctionOptimize"
+author: "xyz"
+date: '2022-05-20'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+```
+
+### iontrap MS2
+
+```{r}
+plotScoreDistribution("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.C13_25Pct.sip")
+ggsave("Pan_050922_09_Orbi_IonTrap.C13_25Pct.score and mass error distribution.pdf",
+       width = 12,
+       height = 12)
+getFilterThreshold("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/",0.1)
+```
+
+```{r}
+plotScoreDistribution("iontrap/Pan_050922_09_Orbi_IonTrap.C13.sip")
+ggsave("Pan_050922_09_Orbi_IonTrap.C13_25Pct.score and mass error distribution.pdf",
+       width = 12,
+       height = 12)
+getFilterThreshold("iontrap/",0.05)
+```
+
+### orbitrap MS2
+
+```{r}
+psm<-readSip("orbitrap/Pan_052322_X13.C13.sip")$PSM
+psm$massWindows <-
+    round(psm$measuredParentMasses - psm$calculatedParentMasses)
+psm$IsDecoy <- stringr::str_detect(psm$proteinNames, "Rev_")
+(filterResult <- getFilterThreshold("orbitrap/",0.01))
+sum(filterResult$pepCount)
+psm <- psm[psm$scores>25.21,]
+table(psm$massWindows)
+table(psm$IsDecoy)
+
+plotScoreDistribution("orbitrap/Pan_052322_X09.C13.sip")
+ggsave("Pan_052322_X09.C13.score and mass error distribution.pdf",
+       width = 12,
+       height = 12)
+```
+
+```{r}
+#"#\tProtein_FDR = 0.0336487907466"
+#"Proteins: 960"
+#"Average Pct: 24.2479100414207%"
+#"Median Pct: 24.92960462875%"
+#"Pct SD: 5.26815208060265%"
+plotProSipPct("orbitrap/Pan_050922_09_Orbi_Orbi.C13.pro.cluster.txt")
+ggsave("Pan_050922_09_Orbi_OrbiResult.pdf", width = 8, height = 6)
+psm <- readSip("orbitrap/Pan_050922_09_Orbi_Orbi.C13.sip")
+psm <- psm$PSM
+plotScoreDistribution("orbitrap/Pan_050922_09_Orbi_Orbi.C13.sip")
+ggsave("Pan_050922_09_Orbi_Orbi.C13_25Pct.score and mass error distribution.pdf",
+       width = 12,
+       height = 12)
+getFilterThreshold("orbitrap/",0.01)
+```
+
+### scoreWeightSumHighMS2 optimize
+
+```{r}
+psm <-
+  read.table(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct50orbit90min/sip/Pan_052322_X1.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename, desc(Score))
+ft2 <-
+  readAllScanMS2("/mnt/d/ubuntuShare/EcoliSIP/C13pct50orbit90min/ft/Pan_052322_X13.FT2")
+
+psm <- psm[1:10, ]
+scanNumbers <- psm$ScanNumber
+pep <- psm$OriginalPeptide
+# pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100
+realScans <- getRealScansWithCharges(ft2, scanNumbers)
+sp <- realScans[[1]]@spectra
+scorePSM(sp$Mass,sp$Prob,sp$Charge,pep[1],"C13",pct[1])
+```
+

@@ -59,3 +59,27 @@ List readSips(CharacterVector workingPath)
     }
     return psmList;
 }
+
+//' readFilesScansTopPSMs read each scan's top PSMs from multiple .sip files
+//' @param workingPath a full path with .sip files in it
+//' @param topN store top N PSMs of each scan of one .FT file
+//' @export
+// [[Rcpp::export]]
+DataFrame readFilesScansTopPSMs(CharacterVector workingPath, size_t topN)
+{
+    sipFileReader reader(as<string>(workingPath));
+    reader.topN = topN;
+    reader.readAllFilesTopPSMs();
+    sipPSM topPSMs = reader.convertFilesScansTopPSMs();
+    DataFrame psmDf = DataFrame::create(Named("fileNames") = move(topPSMs.fileNames),
+                                        _["scanNumbers"] = move(topPSMs.scanNumbers),
+                                        _["parentCharges"] = move(topPSMs.parentCharges),
+                                        _["measuredParentMasses"] = move(topPSMs.measuredParentMasses),
+                                        _["calculatedParentMasses"] = move(topPSMs.calculatedParentMasses),
+                                        _["searchNames"] = move(topPSMs.searchNames),
+                                        _["scores"] = move(topPSMs.scores),
+                                        _["identifiedPeptides"] = move(topPSMs.identifiedPeptides),
+                                        _["originalPeptides"] = move(topPSMs.originalPeptides),
+                                        _["proteinNames"] = move(topPSMs.proteinNames));
+    return psmDf;
+}

@@ -7,6 +7,12 @@
         "unordered_map": "cpp",
         "tuple": "cpp",
         "vector": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "random": "cpp",
+        "iosfwd": "cpp",
+        "typeinfo": "cpp",
+        "sstream": "cpp",
+        "iomanip": "cpp",
+        "filesystem": "cpp"
     }
 }

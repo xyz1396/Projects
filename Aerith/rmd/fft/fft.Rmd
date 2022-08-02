@@ -1,0 +1,191 @@
+---
+title: "fft"
+author: "xyz"
+date: "2022-07-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+library(ggplot2)
+```
+
+### C20
+
+```{r}
+neutronMass <- 13.003355-12
+x <- 20 * 12
+x <- rep(x, 21)
+x <- x + 0:20 * neutronMass
+y <- fft((1 + 0i) * fft(c(0.5 + 0i, 0.5 + 0i, rep(0, 19)))**20, T)
+y <- Re(y)
+sp <- new(
+  "AAspectra",
+  spectra = data.frame(Mass = x, Prob = y),
+  charges = 1,
+  AAstr = "C20"
+)
+sp@spectra <- getMZ(sp@spectra)
+sp@charges <- 1:2
+sp@spectra$Kind <- paste0(sp@spectra$Charge, "+")
+plot(sp)
+```
+
+### averagine residue
+
+```{r by fft}
+n <- 5 + 8 + 1 + 1
+n<-10
+x <- 5 * 12 + 8 * 1.007825 + 15.994915 + 14.003074
+x <- rep(x, n + 1)
+x <- x + 0:n * neutronMass
+y <- fft((1 + 0i) * fft(c(0.5 + 0i, 0.5 + 0i, rep(0, n-1)))**5
+         *fft(c(0.999885 + 0i, 0.000115 + 0i, rep(0, n-1)))**8
+         *fft(c(0.99757 + 0i, 0.00038 + 0i,0.00205 + 0i, rep(0, n-2)))
+         *fft(c(0.99632 + 0i, 0.00368 + 0i, rep(0, n-1))), T)
+y <- Re(y)
+sp <- new(
+  "AAspectra",
+  spectra = data.frame(Mass = x, Prob = y),
+  charges = 1,
+  AAstr = "a"
+)
+sp@spectra <- getMZ(sp@spectra,1)
+sp@charges <- 1
+sp@spectra$Kind <- paste0(sp@spectra$Charge, "+")
+plot(sp) + xlim(98,110)
+ggsave("by fft averagine.pdf", width = 10, height = 5)
+```
+
+```{r by emass}
+a <- residue_peak_calculator_DIY("a", "C13", 0.5)
+asp <- new("AAspectra",
+           spectra = a,
+           charges = 1,
+           AAstr = "a")
+asp@spectra <- getMZ(asp@spectra, 1)
+asp@charges <- 1
+asp@spectra$Kind <- paste0(asp@spectra$Charge, "+")
+plot(asp) + xlim(98, 110)
+ggsave("by emass averagine.pdf", width = 10, height = 5)
+```
+
+### 10 averagine precursor
+
+```{r}
+# +H20
+n <- (5 + 8 + 1 + 1) * 10 + 2 + 1
+n <- 40
+elements <- c(5, 8, 1, 1) * 10 + c(0, 2, 1, 0)
+x <-
+   sum(elements* c(12, 1.007825, 15.994915, 14.003074))
+x <- rep(x, n + 1)
+x <- x + 0:n * neutronMass
+y <-
+  fft((1 + 0i) * fft(c(0.5 + 0i, 0.5 + 0i, rep(0, n - 1))) ** elements[1]
+      * fft(c(0.999885 + 0i, 0.000115 + 0i, rep(0, n - 1))) ** elements[2]
+      * fft(c(
+        0.99757 + 0i, 0.00038 + 0i, 0.00205 + 0i, rep(0, n - 2)
+      )) ** elements[3]
+      * fft(c(0.99632 + 0i, 0.00368 + 0i, rep(0, n - 1))) ** elements[4],
+      T
+  )
+y <- Re(y)
+y<- y/max(y)
+x <- x[y>0.001]
+y <- y[y>0.001]
+sp <- new(
+  "AAspectra",
+  spectra = data.frame(Mass = x, Prob = y),
+  charges = 1,
+  AAstr = "a"
+)
+sp@spectra <- getMZ(sp@spectra,1)
+sp@charges <- 1
+sp@spectra$Kind <- paste0(sp@spectra$Charge, "+")
+plot(sp) + xlim(1005,1040)
+ggsave("by fft averagine 10.pdf", width = 10, height = 5)
+```
+
+```{r}
+asp <- precursor_peak_calculator_DIY(strrep("a",10), "C13", 0.5)
+asp$Prob<-asp$Prob/max(asp$Prob)
+asp<-asp[asp$Prob>0.01,]
+asp <- new("AAspectra",
+           spectra = asp,
+           charges = 1,
+           AAstr = "a")
+asp@spectra <- getMZ(asp@spectra, 1)
+asp@charges <- 1
+asp@spectra$Kind <- paste0(asp@spectra$Charge, "+")
+plot(asp) + xlim(1005, 1040)
+ggsave("by emass averagine 10.pdf", width = 10, height = 5)
+```
+
+### 12 averagine precursor at 27% N15
+
+```{r}
+# +H20
+n <- (5 + 8 + 1 + 1) * 12 + 2 + 1
+n <- 10
+elements <- c(5, 8, 1, 1) * 12 + c(0, 2, 1, 0)
+weight <- elements * c(0.0107, 0.000115, 0.00205 + 0.038, 0.27)
+OdeltaMass <-
+  weighted.mean(c(16.999132 - 15.994915, 17.999160 - 16.999132), c(0.038, 0.205))
+neutronMass <-
+  weighted.mean(c(
+    13.003355 - 12,
+    2.014102 - 1.007825,
+    OdeltaMass,
+    15.000109 - 14.003074
+  ),
+  weight)
+x <-
+   sum(elements* c(12, 1.007825, 15.994915, 14.003074))
+x <- rep(x, n + 1)
+x <- x + 0:n * neutronMass
+y <-
+  fft((1 + 0i) * fft(c(0.9893 + 0i, 0.0107 + 0i, rep(0, n - 1))) ** elements[1]
+      * fft(c(0.999885 + 0i, 0.000115 + 0i, rep(0, n - 1))) ** elements[2]
+      * fft(c(
+        0.99757 + 0i, 0.00038 + 0i, 0.00205 + 0i, rep(0, n - 2)
+      )) ** elements[3]
+      * fft(c(0.73 + 0i, 0.27 + 0i, rep(0, n - 1))) ** elements[4],
+      T
+  )
+y <- Re(y)
+y<- y/max(y)
+x <- x[y>0.001]
+y <- y[y>0.001]
+sp <- new(
+  "AAspectra",
+  spectra = data.frame(Mass = x, Prob = y),
+  charges = 1,
+  AAstr = "a"
+)
+sp@spectra <- getMZ(sp@spectra,1)
+sp@charges <- 1
+sp@spectra$Kind <- paste0(sp@spectra$Charge, "+")
+plot(sp) + xlim(1190,1210)
+ggsave("by fft averagine 12 27pct N15.pdf", width = 10, height = 5)
+```
+
+```{r}
+asp <- precursor_peak_calculator_DIY(strrep("a",12), "N15", 0.27)
+asp$Prob<-asp$Prob/max(asp$Prob)
+asp<-asp[asp$Prob>0.01,]
+asp <- new("AAspectra",
+           spectra = asp,
+           charges = 1,
+           AAstr = "a")
+asp@spectra <- getMZ(asp@spectra, 1)
+asp@charges <- 1
+asp@spectra$Kind <- paste0(asp@spectra$Charge, "+")
+plot(asp) + xlim(1190,1210)
+ggsave("by emass averagine 12 27pct N15.pdf", width = 10, height = 5)
+```
+

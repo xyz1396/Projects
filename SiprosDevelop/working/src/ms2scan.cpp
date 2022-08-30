@@ -1287,7 +1287,7 @@ double MS2Scan::scoreIntensity(const bool observed, const double realIntensity, 
 								   std::sqrt((realIntensity * realIntensity + expectedIntensity * expectedIntensity) / 2)));
 	else
 	{
-		// deductionCoefficient is 0.51 when 13Cpct=0 , x0.01 when 13Cpct=0.5
+		// deductionCoefficient is -0.55 when 13C abundance=0 , -0.05 when 13C abundance=0.5
 		return ProNovoConfig::getDeductionCoefficient() * expectedIntensity;
 	}
 };

@@ -150,7 +150,7 @@ public:
 
 	static double getNeutronMass()
 	{
-		return 1.003355;
+		return neutronMass;
 	}
 
 	static double dnorm(double mean, double sd, double x)
@@ -181,8 +181,11 @@ public:
 		//	return ( 1/(1+exp(dMassError*600-3)));
 	}
 
+	static string &getSetSIPelement() { return SIPelement; }
+	static double &getSetMinValue() { return minValue; }
+	static double &getSetFold() { return fold; }
 	// compute deduction coefficient in score function
-	// only suitbale for carbon SIP now
+	// only suitbale for carbon and nitrogen SIP now
 	static void setDeductionCoefficient();
 	// get deduction coefficient in score function
 	static double getDeductionCoefficient() { return deductionCoefficient; }
@@ -233,7 +236,9 @@ private:
 
 	static string sElementList;
 
-	static double deductionCoefficient;
+	static string SIPelement;
+	// for deductionCoefficient compute in SIP search
+	static double neutronMass, deductionCoefficient, minValue, fold;
 
 	// this is used to setup configIsotopologue
 	// retrieve Elemental composition of amino acid residues

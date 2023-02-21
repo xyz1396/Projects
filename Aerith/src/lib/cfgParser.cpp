@@ -16,8 +16,8 @@ cfgParser::cfgParser(const string &cfgFileName)
         }
         parseParameters();
     }
-    else
-        cout << cfgFileName << " does not exists" << endl;
+    // else
+    //     cout << cfgFileName << " does not exists" << endl;
 }
 
 cfgParser::~cfgParser()

@@ -126,6 +126,8 @@ getSipBYionSpectra <-
         getSipPrecursorSpectra(AAstr, Atom, Prob, precursorCharges)@spectra
       precursorSpectra$Kind <- "Precursor"
       spectra <- rbind(spectra, precursorSpectra)
+      spectra$Kind <-
+        factor(spectra$Kind, levels = unique(spectra$Kind))
     }
     AAsOBJ <- new("AAspectra",
                   spectra = spectra,
@@ -133,6 +135,34 @@ getSipBYionSpectra <-
                   AAstr = AAstr)
     return(AAsOBJ)
   }
+
+#' Convert one scan in list format to AAspectra class
+#'
+#' @param scan one scan in list format
+#'
+#' @return AAspectra object
+#' @export
+#'
+#' @examples
+#' a <- readAllScanMS2("demo.FT2")
+#' b <- getRealScanFromList(a[[1]])
+#' plot(b)
+getRealScanFromList <- function(scan)
+{
+  maxProb <- max(scan$peaks$intensity)
+  BYreal <- data.frame(
+    Mass = scan$peaks$mz,
+    Prob = scan$peaks$intensity / maxProb * 100,
+    Kind = "Real",
+    MZ = scan$peaks$mz,
+    Charge = 1
+  )
+  AAsOBJ <- new("AAspectra",
+                spectra = BYreal,
+                charges = 1,
+                AAstr = "Unknown")
+  return(AAsOBJ)
+}
 
 #' Convert one scan with charges=1 normalized by highest peak in scans list of ft file to AAspectra class
 #'
@@ -149,19 +179,7 @@ getSipBYionSpectra <-
 getRealScan <- function(scanNumber, ft)
 {
   scan <- ft[[paste0("", scanNumber)]]
-  maxProb <- max(scan$peaks$intensity)
-  BYreal <- data.frame(
-    Mass = scan$peaks$mz,
-    Prob = scan$peaks$intensity / maxProb * 100,
-    Kind = "Real",
-    MZ = scan$peaks$mz,
-    Charge = 1
-  )
-  AAsOBJ <- new("AAspectra",
-                spectra = BYreal,
-                charges = 1,
-                AAstr = "Unknown")
-  return(AAsOBJ)
+  return(getRealScanFromList(scan))
 }
 
 #' Convert one scan in scans with real charges list of ft file to AAspectra class
@@ -282,7 +300,7 @@ setMethod("plot", "AAspectra", plot.AAspectra)
 plotSipBYionLabel <- function(spect)
 {
   drawDf <- spect@spectra[, c("MZ", "Kind", "Charge")]
-  drawDf$Label <- paste0(drawDf$Kind, "+", drawDf$Charge)
+  drawDf$Label <- paste0('"',drawDf$Kind,'"', " ^ ", '"' ,drawDf$Charge, "+", '"')
   drawDf <- dplyr::group_by(drawDf, Label)
   drawDf <- dplyr::summarise(drawDf, x = mean(MZ))
   drawDf <- cbind(drawDf, y = 0)
@@ -293,7 +311,8 @@ plotSipBYionLabel <- function(spect)
     data = drawDf,
     inherit.aes = F,
     box.padding = 0.5,
-    max.overlaps = Inf
+    max.overlaps = Inf,
+    parse = TRUE
   )
   return(p)
 }

@@ -1,0 +1,433 @@
+---
+title: "ecoliSIPresultWithTrouble"
+output: html_document
+date: "2022-08-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(Aerith)
+library(stringr)
+```
+
+```{r}
+plotProSipPct <- function(proPath) {
+  proPct <-
+    read.table(proPath,
+               sep = "\t",
+               quote = "",
+               header = T)
+  proPct$AverageEnrichmentLevel <-
+    proPct$AverageEnrichmentLevel / 1000
+  FDR <- readLines(proPath, 44)[44]
+  FDR <- as.numeric(stringr::str_extract(FDR, "[0-9]\\.[0-9]+"))
+  output <- paste0("FDR: ", round(FDR, 3), "\n")
+  proPct <- proPct[stringr::str_detect(proPct$ProteinID, "Rev_",
+                                       negate = T), ]
+  proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_SHEEP",
+                                       negate = T), ]
+  proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_HUMAN",
+                                       negate = T), ]
+  proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_PIG",
+                                       negate = T), ]
+  output <-
+    paste0(output, "Proteins: ", length(unique(proPct$ProteinID)), "\n")
+  output <-
+    paste0(output,
+           "Average Pct: ",
+           round(mean(proPct$AverageEnrichmentLevel), 3),
+           "%\n")
+  output <-
+    paste0(output,
+           "Median Pct: ",
+           round(median(proPct$AverageEnrichmentLevel), 3),
+           "%\n")
+  output <-
+    paste0(output, "Pct SD: ", round(sd(proPct$AverageEnrichmentLevel), 3), "%")
+  cat(output)
+  x <- data.frame(Abundance = proPct$AverageEnrichmentLevel)
+  p <-
+    ggplot2::ggplot(data = x,
+                    mapping = aes(x = Abundance)) +
+    ggplot2::geom_histogram(binwidth = 1,
+                            color = I("black")) +
+    xlab("SIP abundance (%)") +
+    ylab("Protein Count") +
+    theme(text = element_text(size = 15))
+  p
+}
+```
+
+### X5
+
+FDR: 0.059
+Proteins: 1482
+Average Pct: 1.93%
+Median Pct: 2%
+Pct SD: 2.115%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X5.C13.pro.cluster.txt"
+  )
+p
+ggsave("X5.pdf",
+       width = 8,
+       height = 6)
+```
+### X6
+
+FDR: 0.06
+Proteins: 1502
+Average Pct: 1.972%
+Median Pct: 2%
+Pct SD: 2.892%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X6.C13.pro.cluster.txt"
+  )
+p
+ggsave("X6.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X7
+
+FDR: 0.061
+Proteins: 1422
+Average Pct: 1.987%
+Median Pct: 2%
+Pct SD: 2.349% 
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X7.C13.pro.cluster.txt"
+  )
+p
+ggsave("X7.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X16
+
+FDR: 0.038
+Proteins: 851
+Average Pct: 74.1%
+Median Pct: 74%
+Pct SD: 5.796%
+
+75% was a little polluted by 2%
+
+```{r}
+proPct <-
+  read.table(
+    "Pan_062822_X16.C13.pro.cluster.txt",
+    sep = "\t",
+    quote = "",
+    header = T
+  )
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "Rev_",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_SHEEP",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_HUMAN",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_PIG",
+                                     negate = T),]
+proPct$AverageEnrichmentLevel<-proPct$AverageEnrichmentLevel/1000
+
+# 2 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel<25])
+# 74 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel>25])
+
+p <-
+  plotProSipPct(
+    "Pan_062822_X16.C13.pro.cluster.txt"
+  )
+p
+ggsave("X16.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X17 
+
+75% was polluted by 5%
+
+FDR: 0.043
+Proteins: 795
+Average Pct: 32.936%
+Median Pct: 6%
+Pct SD: 34.325%
+
+```{r}
+proPct <-
+  read.table(
+    "Pan_062822_X17.C13.pro.cluster.txt",
+    sep = "\t",
+    quote = "",
+    header = T
+  )
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "Rev_",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_SHEEP",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_HUMAN",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_PIG",
+                                     negate = T),]
+proPct$AverageEnrichmentLevel<-proPct$AverageEnrichmentLevel/1000
+
+# 5 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel<25])
+# 75 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel>25])
+
+p <-
+  plotProSipPct("Pan_062822_X17.C13.pro.cluster.txt")
+p
+ggsave("X17.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X18
+
+75% was polluted by 5%
+
+FDR: 0.042
+Proteins: 685
+Average Pct: 41.427%
+Median Pct: 69%
+Pct SD: 35.001%
+
+```{r}
+proPct <-
+  read.table(
+    "Pan_062822_X18.C13.pro.cluster.txt",
+    sep = "\t",
+    quote = "",
+    header = T
+  )
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "Rev_",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_SHEEP",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_HUMAN",
+                                     negate = T),]
+proPct <- proPct[stringr::str_detect(proPct$ProteinID, "_PIG",
+                                     negate = T),]
+proPct$AverageEnrichmentLevel<-proPct$AverageEnrichmentLevel/1000
+# 5 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel<25])
+View(proPct[proPct$AverageEnrichmentLevel<25,])
+# 75 pct
+median(proPct$AverageEnrichmentLevel[proPct$AverageEnrichmentLevel>25])
+p <-
+  plotProSipPct(
+    "Pan_062822_X18.C13.pro.cluster.txt"
+  )
+p
+ggsave("X18.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X19
+
+FDR: 0.046
+Proteins: 1217
+Average Pct: 5.099%
+Median Pct: 5%
+Pct SD: 2.515% 
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X19.C13.pro.cluster.txt"
+  )
+p
+ggsave("X19.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X20
+
+peptide concentration is low or inject some air in this run
+
+FDR: 0.024
+Proteins: 364
+Average Pct: 6.494%
+Median Pct: 4%
+Pct SD: 9.748%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X20.C13.pro.cluster.txt"
+  )
+p
+ggsave("X20.pdf",
+       width = 8,
+       height = 6)
+```
+
+
+### X21
+
+FDR: 0.05
+Proteins: 1379
+Average Pct: 5.212%
+Median Pct: 5%
+Pct SD: 3.207%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X21.C13.pro.cluster.txt"
+  )
+p
+ggsave("X21.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X28
+
+inaccurate 13C concentration in glucose solution 
+
+FDR: 0.042
+Proteins: 987
+Average Pct: 8.491%
+Median Pct: 8%
+Pct SD: 3.675%
+
+```{r}
+proPct <-
+  read.table(
+    "Pan_062822_X28.C13.pro.cluster.txt",
+    sep = "\t",
+    quote = "",
+    header = T
+  )
+table(proPct$AverageEnrichmentLevel/1000)
+p <-
+  plotProSipPct(
+    "Pan_062822_X28.C13.pro.cluster.txt"
+  )
+p
+ggsave("X28.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X29
+
+FDR: 0.044
+Proteins: 1212
+Average Pct: 8.504%
+Median Pct: 8%
+Pct SD: 3.21%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X29.C13.pro.cluster.txt"
+  )
+p
+ggsave("X29.pdf",
+       width = 8,
+       height = 6)
+```
+### X30
+
+FDR: 0.047
+Proteins: 1185
+Average Pct: 8.517%
+Median Pct: 8%
+Pct SD: 3.366%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X30.C13.pro.cluster.txt"
+  )
+p
+ggsave("X30.pdf",
+       width = 8,
+       height = 6)
+```
+### X25
+
+it is 75% 13C labeled sample
+
+FDR: 0.04
+Proteins: 946
+Average Pct: 73.723%
+Median Pct: 74%
+Pct SD: 4.965%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X25.C13.pro.cluster.txt"
+  )
+p
+ggsave("X25.pdf",
+       width = 8,
+       height = 6)
+```
+
+### X26
+
+it is 75% 13C labeled sample
+
+FDR: 0.04
+Proteins: 947
+Average Pct: 73.673%
+Median Pct: 74%
+Pct SD: 4.798%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X26.C13.pro.cluster.txt"
+  )
+p
+ggsave("X26.pdf",
+       width = 8,
+       height = 6)
+```
+### X27
+
+it is 75% 13C labeled sample
+
+FDR: 0.04
+Proteins: 952
+Average Pct: 73.664%
+Median Pct: 74%
+Pct SD: 4.73%
+
+```{r}
+p <-
+  plotProSipPct(
+    "Pan_062822_X27.C13.pro.cluster.txt"
+  )
+p
+ggsave("X27.pdf",
+       width = 8,
+       height = 6)
+```

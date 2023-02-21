@@ -1,0 +1,57 @@
+---
+title: "read denoise and write MS2"
+author: "xyz"
+date: "2023-02-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Aerith)
+library(patchwork)
+library(ggplot2)
+```
+
+```{r}
+ft2 <- readAllScanMS2("/mnt/d/work/202302/Isolife_Sample1_Elite_SIP_Run3_09.FT2")
+```
+
+### test write .FT2 function
+
+```{r}
+getwd()
+header <- readFTheader("/mnt/d/work/202211/CO2AndMethanolSIP/data/FT2/CO2/Isolife_Sample15_Elite_SIP_Run3_08.FT2")
+ft2 <- readAllScanMS2("/mnt/d/work/202211/CO2AndMethanolSIP/data/FT2/CO2/Isolife_Sample15_Elite_SIP_Run3_08.FT2")
+system.time(writeAllScanMS2(header,ft2[1:100],"demo.ft2"))
+```
+
+### denoise
+
+```{r}
+a<- ft2[["780"]]
+ms2 <- denoiseOneMS2ScanHasCharge(ft2[["780"]], 100, 5, 20)
+a<-getRealScan(780,ft2)
+p<-plot(a)+plot(getRealScanFromList(ms2))
+ggsave("denoise780.pdf",width=20,height=5)
+```
+
+```{r}
+ms2 <- denoiseOneMS2ScanHasCharge(ft2[["273"]], 100, 5, 20)
+a<-getRealScan(273,ft2)
+plot(a)+plot(getRealScanFromList(ms2))
+```
+
+```{r}
+ms2 <- denoiseOneMS2ScanHasCharge(ft2[["809"]], 100, 5, 20)
+a<-getRealScan(809,ft2)
+plot(a)+plot(getRealScanFromList(ms2))
+```
+```{r}
+ms2 <- denoiseOneMS2ScanHasCharge(ft2[["8825"]], 100, 5, 25)
+a<-getRealScan(8825,ft2)
+plot(a)+plot(getRealScanFromList(ms2))
+```
+

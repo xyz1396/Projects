@@ -1,5 +1,6 @@
 #include "lib/sipFileReader.h"
 #include <Rcpp.h>
+#include <regex>
 using namespace Rcpp;
 
 //' readSip
@@ -81,5 +82,47 @@ DataFrame readFilesScansTopPSMs(CharacterVector workingPath, size_t topN)
                                         _["identifiedPeptides"] = move(topPSMs.identifiedPeptides),
                                         _["originalPeptides"] = move(topPSMs.originalPeptides),
                                         _["proteinNames"] = move(topPSMs.proteinNames));
+    return psmDf;
+}
+
+//' readFilesScansTopPSMsFromOneFT2 read each scan's top PSMs from multiple .sip files of one .FT2 file
+//' @param workingPath a full path with .sip files in it
+//' @param pattern a regex pattern of the .Ft2 file
+//' @param topN store top N PSMs of each scan of one .FT2 file
+//' @return a dataframe of top N PSMs
+//' @examples
+//' top3 <-  readFilesScansTopPSMsFromOneFT2(".", "demo1", 3)
+//' @export
+// [[Rcpp::export]]
+DataFrame readFilesScansTopPSMsFromOneFT2(String workingPath, String pattern, size_t topN)
+{
+    sipFileReader reader(workingPath);
+    vector<string> matchedNames;
+    regex ePattern((string)pattern);
+    for (size_t i = 0; i < reader.sipFileNames.size(); i++)
+    {
+        if (regex_match(reader.sipFileNames[i], ePattern))
+            matchedNames.push_back(reader.sipFileNames[i]);
+    }
+    if (matchedNames.size() == 0)
+    {
+        cout << "No .sip file was matched!" << endl;
+        return DataFrame();
+    }
+    reader.sipFileNames = matchedNames;
+    reader.topN = topN;
+    reader.readAllFilesTopPSMs();
+    sipPSM topPSMs = reader.convertFilesScansTopPSMs();
+    DataFrame psmDf = DataFrame::create(Named("FileName") = move(topPSMs.fileNames),
+                                        _["ScanNumber"] = move(topPSMs.scanNumbers),
+                                        _["ParentCharge"] = move(topPSMs.parentCharges),
+                                        _["MeasuredParentMass"] = move(topPSMs.measuredParentMasses),
+                                        _["CalculatedParentMass"] = move(topPSMs.calculatedParentMasses),
+                                        _["SearchName"] = move(topPSMs.searchNames),
+                                        _["Rank"] = move(topPSMs.ranks),
+                                        _["Score"] = move(topPSMs.scores),
+                                        _["IdentifiedPeptide"] = move(topPSMs.identifiedPeptides),
+                                        _["OriginalPeptide"] = move(topPSMs.originalPeptides),
+                                        _["ProteinNames"] = move(topPSMs.proteinNames));
     return psmDf;
 }

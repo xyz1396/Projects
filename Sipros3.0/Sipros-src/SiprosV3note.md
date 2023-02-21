@@ -186,11 +186,19 @@ mpirun ./SiprosV3mpi \
   -w ../MSlabel50 \
   -o MSlabel50Out
 ```
+# move constructor
+
+[move assignment constructor](https://docs.microsoft.com/zh-cn/cpp/cpp/move-constructors-and-move-assignment-operators-cpp?view=msvc-170)
 
 # Performance test
 
 all cores are running   
 less cores will get higher single cpu utilization
+
+```bash
+sudo apt install google-perftools libgoogle-perftools-dev
+google-pprof
+```
 
 ```bash
 ssh c659

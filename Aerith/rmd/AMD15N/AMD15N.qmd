@@ -1,0 +1,131 @@
+---
+title: "AMD15N"
+format: html
+editor: visual
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(Aerith)
+library(stringr)
+```
+
+### old
+
+FDR: 0.001 Proteins: 2263 Average Pct: 0.582% Median Pct: 0.4% Pct SD: 3.039%
+
+```{r}
+p <-
+  plotProSipPct(
+    "old/pct0/AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210.pro.cluster.txt"
+  )
+p
+ggsave("AMDoldPct0.pdf",
+       width = 8,
+       height = 6)
+```
+
+FDR: 0 Proteins: 1274 Average Pct: 48.674% Median Pct: 48.154% Pct SD: 7.925%
+
+```{r}
+p <-
+  plotProSipPct(
+    "old/pct50/AMD_StandardEnrichment_SampleBeta_50Percent15N_Velos_OrbiMS2_Run2_020110.pro.cluster.txt"
+  )
+p
+ggsave("AMDoldPct50.pdf",
+       width = 8,
+       height = 6)
+```
+
+FDR: 0 Proteins: 2085 Average Pct: 97.786% Median Pct: 98.085% Pct SD: 2.425%
+
+```{r}
+p <-
+  plotProSipPct(
+    "old/pct98/AMD_StandardEnrichment_SampleAlpha_98Percent15N_Velos_OrbiMS2_Run2_013110.pro.cluster.txt"
+  )
+p
+ggsave("AMDoldPct98.pdf",
+       width = 8,
+       height = 6)
+```
+
+### new
+
+FDR: 0.049 Proteins: 3463 Average Pct: 1.787% Median Pct: 0.368% Pct SD: 7.217%
+
+```{r}
+plotProSipPct <- function(proPath) {
+  proPct <-
+    read.table(proPath,
+               sep = "\t",
+               quote = "",
+               header = T)
+  proPct$AverageEnrichmentLevel <- proPct$AverageEnrichmentLevel/1000
+  FDR <- readLines(proPath, 44)[44]
+  FDR <- as.numeric(stringr::str_extract(FDR, "[0-9]\\.[0-9]+"))
+  output <- paste0("FDR: ", round(FDR, 3), "\n")
+  output <-
+    paste0(output, "Proteins: ", sum(stringr::str_detect(proPct$ProteinID, "Rev_",
+                                                         negate = T)), "\n")
+  output <-
+    paste0(output,
+           "Average Pct: ",
+           round(mean(proPct$AverageEnrichmentLevel), 3),
+           "%\n")
+  output <-
+    paste0(output,
+           "Median Pct: ",
+           round(median(proPct$AverageEnrichmentLevel), 3),
+           "%\n")
+  output <-
+    paste0(output, "Pct SD: ", round(sd(proPct$AverageEnrichmentLevel), 3), "%")
+  cat(output)
+  x <- data.frame(Abundance = proPct$AverageEnrichmentLevel)
+  p <-
+    ggplot2::ggplot(data = x,
+                    mapping = aes(x = Abundance)) +
+    ggplot2::geom_histogram(binwidth = 1,
+                            color = I("black")) +
+    xlab("SIP abundance (%)") +
+    ylab("Protein Count") +
+    theme(text = element_text(size = 15))
+  p
+}
+p <-
+  plotProSipPct(
+    "new/pct0/AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210.pro.cluster.txt"
+  )
+p
+ggsave("AMDnewPct0.pdf",
+       width = 8,
+       height = 6)
+```
+
+FDR: 0.052 Proteins: 2007 Average Pct: 47.655% Median Pct: 47% Pct SD: 6.922%
+
+```{r}
+p <-
+  plotProSipPct(
+    "new/pct50/AMD_StandardEnrichment_SampleBeta_50Percent15N_Velos_OrbiMS2_Run2_020110.pro.cluster.txt"
+  )
+p
+ggsave("AMDnewPct50.pdf",
+       width = 8,
+       height = 6)
+```
+
+FDR: 0.056 Proteins: 2942 Average Pct: 94.737% Median Pct: 96% Pct SD: 5.981%
+
+```{r}
+p <-
+  plotProSipPct(
+    "new/pct98/AMD_StandardEnrichment_SampleAlpha_98Percent15N_Velos_OrbiMS2_Run2_013110.pro.cluster.txt"
+  )
+p
+ggsave("AMDnewPct98.pdf",
+       width = 8,
+       height = 6)
+```

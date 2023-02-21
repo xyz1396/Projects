@@ -27,20 +27,5 @@ a=readSip("/mnt/d/ubuntuShare/EcoliSIP/sip/Pan_022822_X1.C13_0Pct.sip")
 a=readSips("/mnt/d/ubuntuShare/EcoliSIP/sip/")
 
 a=getUnfilteredPeptides("/mnt/d/ubuntuShare/EcoliSIP/sip/sip0")
-a=getUnfilteredPSMs("/mnt/d/ubuntuShare/EcoliSIP/sip/")
-a=getUnfilteredPSMs("/mnt/d/ubuntuShare/EcoliSIP/sip/sip0")
-
 a=getFilterThreshold("/mnt/d/ubuntuShare/EcoliSIP/sip/sip0",0.01)
 ```
-
-## for plot
-
-```{r}
-a<-getPrecursorSpectra("KHRIP",2)
-plot(a)
-a<-getSipPrecursorSpectra("KHRIPCDRK", "C13", 0.55, 2)
-plot(a)
-a<-getSipBYionSpectra("KHRIPKR", "C13", 0.5, 1)
-plot(a)
-```
-

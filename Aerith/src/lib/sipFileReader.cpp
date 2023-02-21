@@ -185,6 +185,7 @@ sipPSM sipFileReader::convertFilesScansTopPSMs()
                 topPSMs.measuredParentMasses.push_back(scanIX.second[i].measuredParentMass);
                 topPSMs.calculatedParentMasses.push_back(scanIX.second[i].calculatedParentMass);
                 topPSMs.searchNames.push_back(scanIX.second[i].searchName);
+                topPSMs.ranks.push_back(i + 1);
                 topPSMs.scores.push_back(scanIX.second[i].score);
                 topPSMs.identifiedPeptides.push_back(scanIX.second[i].identifiedPeptide);
                 topPSMs.originalPeptides.push_back(scanIX.second[i].originalPeptide);

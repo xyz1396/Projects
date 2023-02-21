@@ -15,7 +15,7 @@ List readOneScanMS2(CharacterVector ftFile, NumericVector scanCount)
                                          _["intensity"] = mScan.intensity,
                                          _["resolution"] = mScan.resolution,
                                          _["baseLine"] = mScan.baseLine,
-                                         _["noise"] = mScan.noise,
+                                         _["signalToNoise"] = mScan.signalToNoise,
                                          _["charge"] = mScan.charge);
     List mScanList = List::create(Named("scanNumber") = mScan.scanNumber,
                                   _["retentionTime"] = mScan.retentionTime,
@@ -39,7 +39,7 @@ List readOneScanMS1(CharacterVector ftFile, NumericVector scanCount)
                                          _["intensity"] = mScan.intensity,
                                          _["resolution"] = mScan.resolution,
                                          _["baseLine"] = mScan.baseLine,
-                                         _["noise"] = mScan.noise,
+                                         _["signalToNoise"] = mScan.signalToNoise,
                                          _["charge"] = mScan.charge);
     List mScanList = List::create(Named("scanNumber") = mScan.scanNumber,
                                   _["retentionTime"] = mScan.retentionTime,

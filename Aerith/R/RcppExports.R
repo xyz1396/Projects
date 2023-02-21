@@ -124,6 +124,16 @@ readOneScanMS1 <- function(ftFile, scanCount) {
     .Call(`_Aerith_readOneScanMS1`, ftFile, scanCount)
 }
 
+#' read FT file header
+#' @param ftFile a ft1 file's full path
+#' @return a list of ft file header
+#' @examples
+#' header <- readFTheader("demo.ft1")
+#' @export
+readFTheader <- function(ftFile) {
+    .Call(`_Aerith_readFTheader`, ftFile)
+}
+
 #' read MS1 scans with scanNumber as index
 #' @param ftFile a ft1 file's full path
 #' @return a list of MS1 scans with names of scan number
@@ -150,7 +160,7 @@ readScansMS2 <- function(ftFile, scanCount) {
 }
 
 #' read MS2 scans with scanNumber as index
-#' @param ftFile a ft1 file's full path
+#' @param ftFile a ft2 file's full path
 #' @return a list of MS2 scans with names of scan number
 #' @examples
 #' ft2 <- readAllScanMS2("demo.ft2")
@@ -181,6 +191,38 @@ readFilesScansTopPSMs <- function(workingPath, topN) {
     .Call(`_Aerith_readFilesScansTopPSMs`, workingPath, topN)
 }
 
+#' readFilesScansTopPSMsFromOneFT2 read each scan's top PSMs from multiple .sip files of one .FT2 file
+#' @param workingPath a full path with .sip files in it
+#' @param pattern a regex pattern of the .Ft2 file
+#' @param topN store top N PSMs of each scan of one .FT2 file
+#' @return a dataframe of top N PSMs
+#' @examples
+#' top3 <-  readFilesScansTopPSMsFromOneFT2(".", "demo1", 3)
+#' @export
+readFilesScansTopPSMsFromOneFT2 <- function(workingPath, pattern, topN) {
+    .Call(`_Aerith_readFilesScansTopPSMsFromOneFT2`, workingPath, pattern, topN)
+}
+
+#' scoreIntensity
+#' @param observed this peak is observed or not
+#' @param realIntensity real intensity in MS2 scan
+#' @param expectedIntensity expected intensity
+#' @param Atom "C13" or "N15"
+#' @param Prob its SIP abundance (0.0~1.0)
+#' @return a score of this intensity match
+#' @export
+scoreIntensity <- function(observed, realIntensity, expectedIntensity, Atom, Prob) {
+    .Call(`_Aerith_scoreIntensity`, observed, realIntensity, expectedIntensity, Atom, Prob)
+}
+
+#' scoreIntensityByCrossEntropy
+#' @param expectedIntensity expected intensityreal
+#' @param observedIntensity observed intensity in MS2 scan
+#' @export
+scoreIntensityByCE <- function(expectedIntensity, observedIntensity) {
+    .Call(`_Aerith_scoreIntensityByCE`, expectedIntensity, observedIntensity)
+}
+
 #' scorePSM
 #' @param realMZ mz vector in MS2 scan
 #' @param realIntensity intensity vector in MS2 scan
@@ -191,6 +233,18 @@ readFilesScansTopPSMs <- function(workingPath, topN) {
 #' @export
 scorePSM <- function(realMZ, realIntensity, realCharge, pepSeq, Atom, Prob) {
     .Call(`_Aerith_scorePSM`, realMZ, realIntensity, realCharge, pepSeq, Atom, Prob)
+}
+
+#' scorePSMold old function of scoreWeightSumHighMS2
+#' @param realMZ mz vector in MS2 scan
+#' @param realIntensity intensity vector in MS2 scan
+#' @param pepSeq a string of peptide
+#' @param Atom "C13" or "N15"
+#' @param Prob its SIP abundance (0.0~1.0)
+#' @return a score of this PSM
+#' @export
+scorePSMold <- function(realMZ, realIntensity, realCharge, pepSeq, Atom, Prob) {
+    .Call(`_Aerith_scorePSMold`, realMZ, realIntensity, realCharge, pepSeq, Atom, Prob)
 }
 
 #' Simple sum
@@ -205,5 +259,37 @@ calc_sum <- function(x) {
 #' @export
 test_ftFileReader <- function(ftFile) {
     invisible(.Call(`_Aerith_test_ftFileReader`, ftFile))
+}
+
+rankyfify <- function(a) {
+    .Call(`_Aerith_rankyfify`, a)
+}
+
+#' denoise one MS2 scan has charge
+#' @param scanList a list of one MS2 scan has charge
+#' @param window a float of mz window size for denoise
+#' @param step a float of mz step for denoise
+#' @param threshold a float of top N threshold for denoise
+#' @return a denoised MS2 scan has charge
+#' @examples
+#' ft2 <- readAllScanMS2("demo.ft2")
+#' ms2 <- denoiseOneMS2ScanHasCharge(ft2[1], 100, 10, 25)
+#' @export
+denoiseOneMS2ScanHasCharge <- function(scanList, window, step, threshold) {
+    .Call(`_Aerith_denoiseOneMS2ScanHasCharge`, scanList, window, step, threshold)
+}
+
+#' write all MS2 scans has charge
+#' @param header a list of FT file header
+#' @param scans a list of scans for output
+#' @param ftFile a ft2 file's output path
+#' @return void
+#' @examples
+#' header <- readFTheader("demo.ft2")
+#' ft2 <- readAllScanMS2("demo.ft2")
+#' writeAllScanMS2(header,ft2[1:10],"demo10.ft2")
+#' @export
+writeAllScanMS2 <- function(header, scansList, ftFile) {
+    .Call(`_Aerith_writeAllScanMS2`, header, scansList, ftFile)
 }
 

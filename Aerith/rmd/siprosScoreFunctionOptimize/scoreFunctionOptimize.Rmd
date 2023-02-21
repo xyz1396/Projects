@@ -14,6 +14,7 @@ library(Aerith)
 library(ggplot2)
 library(dplyr)
 library(stringr)
+library(stringi)
 ```
 
 ### iontrap MS2
@@ -21,56 +22,62 @@ library(stringr)
 ```{r}
 plotScoreDistribution("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/Pan_050922_09_Orbi_IonTrap.C13_25Pct.sip")
 ggsave("Pan_050922_09_Orbi_IonTrap.C13_25Pct.score and mass error distribution.pdf",
-       width = 12,
-       height = 12)
-getFilterThreshold("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/",0.1)
+  width = 12,
+  height = 12
+)
+getFilterThreshold("/mnt/d/ubuntuShare/EcoliSIP/C13pct25ion/", 0.1)
 ```
 
 ```{r}
 plotScoreDistribution("iontrap/Pan_050922_09_Orbi_IonTrap.C13.sip")
 ggsave("Pan_050922_09_Orbi_IonTrap.C13_25Pct.score and mass error distribution.pdf",
-       width = 12,
-       height = 12)
-getFilterThreshold("iontrap/",0.05)
+  width = 12,
+  height = 12
+)
+getFilterThreshold("iontrap/", 0.05)
 ```
 
 ### orbitrap MS2
 
 ```{r}
-psm<-readSip("orbitrap/Pan_052322_X13.C13.sip")$PSM
+psm <- readSip("orbitrap/Pan_052322_X13.C13.sip")$PSM
 psm$massWindows <-
-    round(psm$measuredParentMasses - psm$calculatedParentMasses)
+  round(psm$measuredParentMasses - psm$calculatedParentMasses)
 psm$IsDecoy <- stringr::str_detect(psm$proteinNames, "Rev_")
-(filterResult <- getFilterThreshold("orbitrap/",0.01))
+(filterResult <- getFilterThreshold("orbitrap/", 0.01))
 sum(filterResult$pepCount)
-psm <- psm[psm$scores>25.21,]
+psm <- psm[psm$scores > 25.21, ]
 table(psm$massWindows)
 table(psm$IsDecoy)
 
 plotScoreDistribution("orbitrap/Pan_052322_X09.C13.sip")
 ggsave("Pan_052322_X09.C13.score and mass error distribution.pdf",
-       width = 12,
-       height = 12)
+  width = 12,
+  height = 12
+)
 ```
 
 ```{r}
-#"#\tProtein_FDR = 0.0336487907466"
-#"Proteins: 960"
-#"Average Pct: 24.2479100414207%"
-#"Median Pct: 24.92960462875%"
-#"Pct SD: 5.26815208060265%"
+# "#\tProtein_FDR = 0.0336487907466"
+# "Proteins: 960"
+# "Average Pct: 24.2479100414207%"
+# "Median Pct: 24.92960462875%"
+# "Pct SD: 5.26815208060265%"
 plotProSipPct("orbitrap/Pan_050922_09_Orbi_Orbi.C13.pro.cluster.txt")
 ggsave("Pan_050922_09_Orbi_OrbiResult.pdf", width = 8, height = 6)
 psm <- readSip("orbitrap/Pan_050922_09_Orbi_Orbi.C13.sip")
 psm <- psm$PSM
 plotScoreDistribution("orbitrap/Pan_050922_09_Orbi_Orbi.C13.sip")
 ggsave("Pan_050922_09_Orbi_Orbi.C13_25Pct.score and mass error distribution.pdf",
-       width = 12,
-       height = 12)
-getFilterThreshold("orbitrap/",0.01)
+  width = 12,
+  height = 12
+)
+getFilterThreshold("orbitrap/", 0.01)
 ```
 
 ### scoreWeightSumHighMS2 optimize
+
+#### pct50
 
 ```{r}
 psm <-
@@ -88,9 +95,155 @@ pep <- psm$OriginalPeptide
 # pep <- str_sub(pep, 2, -2)
 pct <- psm$SearchName
 pct <-
-  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1, -4)) / 100
 realScans <- getRealScansWithCharges(ft2, scanNumbers)
+
 sp <- realScans[[1]]@spectra
-scorePSM(sp$Mass,sp$Prob,sp$Charge,pep[1],"C13",pct[1])
+revPep <- paste0("[", stri_reverse(str_sub(pep[1], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+
+sp <- realScans[[2]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[2], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+
+sp <- realScans[[3]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[3], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+```
+
+```{r}
+plotProSipPct("pct50newScoreFunction/Pan_052322_X1.pro.cluster.txt")
+ggsave("C13pct50newScoreFunctionSIPresult.pdf",
+       width = 8,
+       height = 6)
+proPct <-
+    read.table("pct50newScoreFunction/Pan_052322_X1.pro.cluster.txt",
+               sep = "\t",
+               quote = "",
+               header = T)
+proPct <- proPct[str_detect(proPct$ProteinID,"HUMAN",T),]
+proPct <- proPct[str_detect(proPct$ProteinID,"PIG",T),]
+proPct <- proPct[str_detect(proPct$ProteinID,"Rev_",T),]
+# 1097
+nrow(proPct)
+# 50.09502
+weighted.mean(proPct$AverageEnrichmentLevel,proPct$TotalSpectrumCounts)
+# 49.55
+mean(proPct$AverageEnrichmentLevel)
+# 3.663997
+sd(proPct$AverageEnrichmentLevel)
+
+psm <-
+  read.table(
+    "pct50newScoreFunction/Pan_052322_X1.psm.txt",
+    header = T
+  )
+```
+
+#### pct25
+
+```{r}
+psm <-
+  read.table(
+    "/mnt/d/ubuntuShare/EcoliSIP/C13pct25orbit90min/sip/Pan_052322_X.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename, desc(Score))
+ft2 <-
+  readAllScanMS2("/mnt/d/ubuntuShare/EcoliSIP/C13pct25orbit90min/ft/Pan_052322_X09.FT2")
+
+psm <- psm[1:10, ]
+scanNumbers <- psm$ScanNumber
+pep <- psm$OriginalPeptide
+# pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1, -4)) / 100
+realScans <- getRealScansWithCharges(ft2, scanNumbers)
+
+sp <- realScans[[1]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[1], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+
+sp <- realScans[[2]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[2], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+
+sp <- realScans[[3]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[3], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+```
+
+#### pct0
+
+```{r}
+psm <-
+  read.table(
+    "pct0oldNeScoreFunction/Ecoli_OU.C13.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename, desc(Score))
+ft2 <-
+  readAllScanMS2("/mnt/d/work/202207/Ecoli_OU.FT2")
+
+psm <- psm[1:10, ]
+scanNumbers <- psm$ScanNumber
+pep <- psm$OriginalPeptide
+# pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1, -4)) / 100
+realScans <- getRealScansWithCharges(ft2, scanNumbers)
+
+sp <- realScans[[1]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[1], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[1], "C13", pct[1])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[1])
+
+sp <- realScans[[2]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[2], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[2], "C13", pct[2])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[2])
+
+sp <- realScans[[3]]@spectra
+revPep <- paste0("[", stri_reverse(str_sub(pep[3], 2, -2)), "]")
+scorePSM(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSM(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, pep[3], "C13", pct[3])
+scorePSMold(sp$Mass, sp$Prob, sp$Charge, revPep, "C13", pct[3])
+```
+
+### generate deduction coefficient
+
+```{r}
+f <- function(x) {
+  128 * (x - 0.5) ** 8 + 0.05
+}
+x <- 0:100 / 100
+y <- round(sapply(x, f), 4)
+plot(x, y)
+y
 ```
 

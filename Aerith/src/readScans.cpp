@@ -3,6 +3,25 @@
 
 using namespace Rcpp;
 
+//' read FT file header
+//' @param ftFile a ft1 file's full path
+//' @return a list of ft file header
+//' @examples
+//' header <- readFTheader("demo.ft1")
+//' @export
+// [[Rcpp::export]]
+List readFTheader(CharacterVector ftFile)
+{
+    ftFileReader reader(as<string>(ftFile));
+    reader.detectPrecursorAndCharge();
+    List header = List::create(Named("instrument") = reader.instrument,
+                               _["scanType"] = reader.scanType,
+                               _["scanFilter"] = reader.scanFilter,
+                               _["hasPrecursor"] = reader.hasPrecursor,
+                               _["hasCharge"] = reader.hasCharge);
+    return header;
+}
+
 //' read MS1 scans with scanNumber as index
 //' @param ftFile a ft1 file's full path
 //' @return a list of MS1 scans with names of scan number
@@ -13,6 +32,9 @@ using namespace Rcpp;
 List readScansMS1(CharacterVector ftFile, NumericVector scanCount)
 {
     ftFileReader reader(as<string>(ftFile));
+    // avoid empty scanList crash
+    if (reader.isEmpty)
+        return 0;
     size_t scanCountInt = as<int>(scanCount);
     reader.readScans(scanCountInt);
     // in case there is not enough scan in ft file
@@ -26,7 +48,7 @@ List readScansMS1(CharacterVector ftFile, NumericVector scanCount)
                                              _["intensity"] = move(mScan->intensity),
                                              _["resolution"] = move(mScan->resolution),
                                              _["baseLine"] = move(mScan->baseLine),
-                                             _["noise"] = move(mScan->noise),
+                                             _["signalToNoise"] = move(mScan->signalToNoise),
                                              _["charge"] = move(mScan->charge));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,
@@ -44,6 +66,9 @@ List readScansMS1(CharacterVector ftFile, NumericVector scanCount)
 List readAllScanMS1(CharacterVector ftFile)
 {
     ftFileReader reader(as<string>(ftFile));
+    // avoid empty scanList crash
+    if (reader.isEmpty)
+        return 0;
     reader.readAllScan();
     List scanList(reader.Scans.size());
     CharacterVector scanNumbers(reader.Scans.size());
@@ -57,7 +82,7 @@ List readAllScanMS1(CharacterVector ftFile)
                                              _["intensity"] = wrap(move(mScan->intensity)),
                                              _["resolution"] = wrap(move(mScan->resolution)),
                                              _["baseLine"] = wrap(move(mScan->baseLine)),
-                                             _["noise"] = wrap(move(mScan->noise)),
+                                             _["signalToNoise"] = wrap(move(mScan->signalToNoise)),
                                              _["charge"] = wrap(move(mScan->charge)));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,
@@ -79,6 +104,9 @@ List readAllScanMS1(CharacterVector ftFile)
 List readScansMS2(CharacterVector ftFile, NumericVector scanCount)
 {
     ftFileReader reader(as<string>(ftFile));
+    // avoid empty scanList crash
+    if (reader.isEmpty)
+        return 0;
     size_t scanCountInt = as<int>(scanCount);
     reader.readScans(scanCountInt);
     // in case there is not enough scan in ft file
@@ -92,7 +120,7 @@ List readScansMS2(CharacterVector ftFile, NumericVector scanCount)
                                              _["intensity"] = move(mScan->intensity),
                                              _["resolution"] = move(mScan->resolution),
                                              _["baseLine"] = move(mScan->baseLine),
-                                             _["noise"] = move(mScan->noise),
+                                             _["signalToNoise"] = move(mScan->signalToNoise),
                                              _["charge"] = move(mScan->charge));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,
@@ -107,7 +135,7 @@ List readScansMS2(CharacterVector ftFile, NumericVector scanCount)
 }
 
 //' read MS2 scans with scanNumber as index
-//' @param ftFile a ft1 file's full path
+//' @param ftFile a ft2 file's full path
 //' @return a list of MS2 scans with names of scan number
 //' @examples
 //' ft2 <- readAllScanMS2("demo.ft2")
@@ -116,6 +144,9 @@ List readScansMS2(CharacterVector ftFile, NumericVector scanCount)
 List readAllScanMS2(CharacterVector ftFile)
 {
     ftFileReader reader(as<string>(ftFile));
+    // avoid empty scanList crash
+    if (reader.isEmpty)
+        return 0;
     reader.readAllScan();
     List scanList(reader.Scans.size());
     Scan *mScan;
@@ -128,7 +159,7 @@ List readAllScanMS2(CharacterVector ftFile)
                                              _["intensity"] = wrap(move(mScan->intensity)),
                                              _["resolution"] = wrap(move(mScan->resolution)),
                                              _["baseLine"] = wrap(move(mScan->baseLine)),
-                                             _["noise"] = wrap(move(mScan->noise)),
+                                             _["signalToNoise"] = wrap(move(mScan->signalToNoise)),
                                              _["charge"] = wrap(move(mScan->charge)));
         List mScanList = List::create(Named("scanNumber") = mScan->scanNumber,
                                       _["retentionTime"] = mScan->retentionTime,

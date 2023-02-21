@@ -17,18 +17,27 @@ class IsotopeDistribution
 {
 public:
 	IsotopeDistribution();
-	IsotopeDistribution(vector<double> vItsMass, vector<double> vItsComposition);
-	// IsotopeDistribution(int vItsMassSize, int vItsCompositionSize);
+	IsotopeDistribution(const IsotopeDistribution &mIsotopeDistribution);
+	IsotopeDistribution(IsotopeDistribution &&mIsotopeDistribution);
+	IsotopeDistribution(const vector<double> &vItsMass, const vector<double> &vItsComposition);
+	IsotopeDistribution(int vItsSize);
+	IsotopeDistribution &operator=(const IsotopeDistribution &mIsotopeDistribution);
+	IsotopeDistribution &operator=(IsotopeDistribution &&mIsotopeDistribution);
 	~IsotopeDistribution();
 
-	vector<double> vMass;
-	vector<double> vProb;
+	// vector<double> vMass;
+	// vector<double> vProb;
+
+	int aSize;
+	double *massArray;
+	double *probArray;
 
 	double getMostAbundantMass();
 	double getAverageMass();
 	double getLowestMass();
 
 	void filterProbCutoff(double dProCutoff);
+	void normalize();
 
 	// print out the isotoptic distribution
 	// this is mainly used for debuging
@@ -74,12 +83,12 @@ public:
 	// compute the atomic composition for an amino acid sequence
 	bool computeAtomicComposition(string sSequence, vector<int> &myAtomicComposition);
 
-private:
 	// functions for IsotopeDistribution's arithmetic
 	IsotopeDistribution sum(const IsotopeDistribution &distribution0,
 							const IsotopeDistribution &distribution1);
-	IsotopeDistribution sum_backup(const IsotopeDistribution &distribution0, const IsotopeDistribution &distribution1);
 	IsotopeDistribution multiply(const IsotopeDistribution &distribution0, int count);
+
+private:
 	void shiftMass(IsotopeDistribution &distribution0, double dMass);
 
 	// implementation of max and min

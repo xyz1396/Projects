@@ -1,0 +1,13 @@
+prefix=/mnt/d/projects/mstoolkit/obj
+exec_prefix=${prefix}
+libdir=/mnt/d/projects/mstoolkit/obj
+sharedlibdir=${libdir}
+includedir=/mnt/d/projects/mstoolkit/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.11
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

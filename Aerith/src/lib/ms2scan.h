@@ -21,15 +21,15 @@ const double ZERO = 0.00000001;
 
 class ProductIon // for each ion
 {
-    char cIonType;              //y or b
+    char cIonType;              // y or b
     int iIonNumber;             // 1: y1 or b1; 2: y2 or b2; ...
     int iCharge;                // charge state
     int iMostAbundantPeakIndex; // related to the item with highest intensity
-    double dMostAbundantMass;   //related to the item with highest intensity
+    double dMostAbundantMass;   // related to the item with highest intensity
     double dMostAbundantMZ;     // related to the item with highest intensity
     double dMZError;
     double dMassError;                   // calculate based on dMZError
-    double dScoreWeight;                 //related to mass error and intensity
+    double dScoreWeight;                 // related to mass error and intensity
     bool bComplementaryFragmentObserved; // if y_k and b_n-k co-exist, where n is # of residues
 public:
     ProductIon();
@@ -56,9 +56,9 @@ public:
 class ScanUnit
 {
 public:
-	double intensity;
-	bool match;
-	ScanUnit(double inten, bool mat){intensity = inten; match=mat;};
+    double intensity;
+    bool match;
+    ScanUnit(double inten, bool mat){intensity = inten; match=mat;};
 };*/
 
 class PeptideUnit
@@ -80,12 +80,13 @@ public:
 
 class alignas(64) MS2Scan
 {
+protected:
     int bin_res, iMaxMZ, iMinMZ;
 
     double dMassTolerance; //<FRAGMENT_IONS>
     double dProtonMass;    // proton mass
 
-    string sScanType; //format: FT-MS1/FT-MS2@CID
+    string sScanType; // format: FT-MS1/FT-MS2@CID
 
     vector<double> vdpreprocessedMZ;
     vector<double> vdpreprocessedIntensity;
@@ -94,7 +95,7 @@ class alignas(64) MS2Scan
     // vdMaxMzIntensity[i] is the maximum intensity at M/Z window of i plus and minus iMzRange
     vector<double> vdMaxMzIntensity;
     vector<double> vdMzIntensity;
-    vector<double> vdHighIntensity; //thresholds
+    vector<double> vdHighIntensity; // thresholds
 
     vector<int> vbPeakPresenceBins;
     vector<pair<int, int>> vbPeakPresenceBins2D; // first is lower bounder, second is upper bound
@@ -118,9 +119,9 @@ class alignas(64) MS2Scan
     bool searchMZ(const double &dTarget, int &iIndex4Found);   // corresponds to binCalculation()
     bool searchMZ2D(const double &dTarget, int &iIndex4Found); // corresponds to binCalculation2D()
     bool searchMZ2D(const double &dTarget, const double &dErrRange, int &iIndex4Found);
-    //merge same peptide. If no same peptide return false, otherwise, return true
+    // merge same peptide. If no same peptide return false, otherwise, return true
     bool mergePeptide(vector<PeptideUnit *> &vpTopPeptides, const string &sPeptide, const string &sProteinName);
-    void sortPreprocessedIntensity(); //sort preprocessed Intensity;
+    void sortPreprocessedIntensity(); // sort preprocessed Intensity;
 
     void cleanup();
 
@@ -132,7 +133,7 @@ class alignas(64) MS2Scan
     // build the map between y or b ions for observed intensity and related mass (only for one ion)
     bool findProductIon(const vector<double> &vdIonMass, // expected mass
                         const vector<double> &vdIonProb,
-                        //expected intensity based on the summation of all related intensities
+                        // expected intensity based on the summation of all related intensities
                         const int &iCharge,
                         double &dScoreWeight,
                         double &dAverageMZError,
@@ -141,7 +142,7 @@ class alignas(64) MS2Scan
 
     bool findProductIonSIP(const vector<double> &vdIonMass, // expected mass
                            const vector<double> &vdIonProb,
-                           //expected intensity based on the summation of all related intensities
+                           // expected intensity based on the summation of all related intensities
                            const int &iCharge,
                            double &dScoreWeight,
                            double &dAverageMZError,
@@ -173,7 +174,7 @@ public:
 
     bool isMS1HighRes;            // Is the MS1 scan a high-resolution scan?
     bool isMS2HighRes;            // Is this MS2 scan a high-resolution scan?
-    vector<Peptide *> vpPeptides; //current set of peptides to be scored
+    vector<Peptide *> vpPeptides; // current set of peptides to be scored
     bool bSetMS2Flag;             // false when preprocess fail on bad data
 
     // preprocess this scan, including
@@ -190,7 +191,7 @@ public:
     // scoring functions
     void scoreWeightSum(Peptide *currentPeptide);
     void scoreRankSum(Peptide *currentPeptide);
-    //void scoreRankSum_test(Peptide * currentPeptide);
+    // void scoreRankSum_test(Peptide * currentPeptide);
     void scoreWeightSumHighMS2(Peptide *currentPeptide);
     void scoreRankSumHighMS2(Peptide *currentPeptide);
     // normalize raw scores

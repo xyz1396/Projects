@@ -3,10 +3,7 @@
         "iostream": "cpp",
         "*.tcc": "cpp",
         "list": "cpp",
-        "map": "cpp",
-        "unordered_map": "cpp",
-        "tuple": "cpp",
-        "vector": "cpp",
-        "ostream": "cpp"
+        "filesystem": "cpp",
+        "tuple": "cpp"
     }
 }

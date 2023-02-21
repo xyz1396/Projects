@@ -7,7 +7,7 @@
 readAllScanMS2(ftFile)
 }
 \arguments{
-\item{ftFile}{a ft1 file's full path}
+\item{ftFile}{a ft2 file's full path}
 }
 \value{
 a list of MS2 scans with names of scan number

@@ -113,13 +113,11 @@ void cfgParser::changeMassWindowsCenter(const int center, const int windowsSize)
     lines[Parent_Mass_WindowsIX] = "Parent_Mass_Windows = " + windows;
 }
 
-void cfgParser::changeSIPabundance(const int sipAbundance)
+void cfgParser::changeSIPabundance(const double sipAbundance)
 {
-    stringstream pct;
-    pct << fixed << setprecision(2) << (100.0F - sipAbundance) / 100.0F;
-    pct << ",\t"
-        << fixed << setprecision(2) << sipAbundance / 100.0F;
-    lines[Element_PercentIX] = Element_PercentName + " \t=\t" + pct.str();
+    string pct = to_string_with_precision((100.0F - sipAbundance) / 100.0F, 5);
+    pct += ",\t" + to_string_with_precision(sipAbundance / 100.0F, 5);
+    lines[Element_PercentIX] = Element_PercentName + " \t=\t" + pct;
 }
 
 void cfgParser::writeFile(const string &folderPath)

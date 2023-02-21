@@ -1,0 +1,38 @@
+#! /bin/sh
+case $1 in
+"clean")
+    rm -rf build
+    mkdir build
+    rm -rf bin
+    mkdir bin
+    ;;
+"build")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make -j6
+    ;;
+"debug")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    make -j6
+    ;;
+"make")
+    cd build
+    make
+    ;;
+"run")
+    cd test
+    starttime=$(date +'%Y-%m-%d %H:%M:%S')
+
+    ../bin/ProRata -w . -c ProRataConfig_LabelFree.xml -i Pan_102621_Q1_SF05.SE.pro2psm.txt --chro
+
+    endtime=$(date +'%Y-%m-%d %H:%M:%S')
+    start_seconds=$(date --date="$starttime" +%s)
+    end_seconds=$(date --date="$endtime" +%s)
+    echo "\n"
+    echo "Elapsed time： "$((end_seconds - start_seconds))"s"
+    ;;
+*)
+    ./make "build"
+    ;;
+esac

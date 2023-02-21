@@ -9,22 +9,24 @@ struct alignas(64) PSMinfo
 {
     string ftFileName;
     int scanNumber;
+    int parentCharge;
     float retentionTime;
     // save top 5 PSM with highest scores of one scan for filtering
     float bestScores[5]={0};
-    int parentCharges[5];
-    string searchNames[5];
-    bool isDecoys[5];
+    int parentCharge[5];
+    string searchName[5];
+    bool isDecoy[5];
     double measuredParentMasses[5];
     double calculatedParentMasses[5];
     string identifiedPepSeqs[5];
     string originalPepSeqs[5];
-    int pepLengths[5];
+    string pepLengths[5];
     string proNames[5];
-    int proCounts[5];
+    string proCounts[5];
     // for accurate isotopic abundance calculation
     vector<double> precursorIsotopicMasses;
     vector<double> precursorIsotopicIntensities;
+    PSMinfo(string &mSearchName, string &ftFileName, sipPSM &psm);
 };
 
 class PSMsFiltrator
@@ -50,9 +52,7 @@ public:
     PSMsFiltrator(const vector<sipPSM> &sipPSMs, float mFDRthreshold);
     ~PSMsFiltrator();
     void splitString(const string mString);
-    // <proCount,isDecoy>
-    pair<int,bool> detectProDecoy(const string &proteinName);
-    void fillPSMinfo(PSMinfo &mPSMinfo, const sipPSM &psm, const int psmIX);
+    bool detectDecoy(const string &proteinName);
     void getRentionTime(string &workPath);
     void writePercolatorTSV();
     void readPercolatorTSV();

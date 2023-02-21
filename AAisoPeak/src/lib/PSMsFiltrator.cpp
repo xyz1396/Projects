@@ -1,23 +1,31 @@
 #include "PSMsFiltrator.h"
 
+PSMinfo::PSMinfo(bool mIsDecoy, float mBestScore)
+	: isDecoy(mIsDecoy), bestScore(mBestScore)
+{
+}
+
 PSMsFiltrator::PSMsFiltrator(const vector<sipPSM> &sipPSMs, float mFDRthreshold)
 	: FDRthreshold(mFDRthreshold)
 {
 	for (sipPSM psm : sipPSMs)
 	{
-		for (size_t i = 0; i < psm.scanNumbers.size(); i++)
+		for (size_t i = 0; i < psm.identifiedPeptides.size(); i++)
 		{
-			string psmID = psm.fileName + to_string(psm.scanNumbers[i]);
-			auto psmIX = PSMsMap.find(psmID);
-			if (psmIX != PSMsMap.end())
-				fillPSMinfo(psmIX->second, psm, i);
+			if (psm.parentCharges[i] <= 2)
+			{
+				initFillPeptideMap(psm.identifiedPeptides[i], psm.scores[i], psm.proteinNames[i],
+								   peptideMapCharge2);
+			}
+			else if (psm.parentCharges[i] == 3)
+			{
+				initFillPeptideMap(psm.identifiedPeptides[i], psm.scores[i], psm.proteinNames[i],
+								   peptideMapCharge3);
+			}
 			else
 			{
-				PSMinfo temp;
-				temp.ftFileName = psm.fileName;
-				temp.scanNumber = psm.scanNumbers[i];
-				fillPSMinfo(temp, psm, i);
-				PSMsMap.insert({psmID, temp});
+				initFillPeptideMap(psm.identifiedPeptides[i], psm.scores[i], psm.proteinNames[i],
+								   peptideMapChargeLargerThan3);
 			}
 		}
 	}
@@ -42,7 +50,34 @@ void PSMsFiltrator::splitString(const string mString)
 	tokens.push_back(mString.substr(start));
 }
 
-pair<int, bool> PSMsFiltrator::detectProDecoy(const string &proteinName)
+void PSMsFiltrator::initFillPeptideMap(const string &pepSeq,
+									   const float score,
+									   const string &proName,
+									   unordered_map<string, PSMinfo> &mMap)
+{
+	auto pepIX = mMap.find(pepSeq);
+	if (pepIX != mMap.end())
+	{
+		pepIX->second.scores.push_back(score);
+		if (score > pepIX->second.bestScore)
+			pepIX->second.bestScore = score;
+		// if one protein is not decoy the peptide is not decoy
+		// check it is decoy or not only when it is decoy before
+		if (pepIX->second.isDecoy)
+		{
+			if (!detectDecoy(proName))
+				pepIX->second.isDecoy = false;
+		}
+	}
+	else
+	{
+		PSMinfo temp = PSMinfo(detectDecoy(proName), score);
+		temp.scores.push_back(score);
+		mMap.insert({pepSeq, temp});
+	}
+}
+
+bool PSMsFiltrator::detectDecoy(const string &proteinName)
 {
 	// remove {} out of protein names then split it
 	splitString(proteinName.substr(1, proteinName.size() - 2));
@@ -50,43 +85,127 @@ pair<int, bool> PSMsFiltrator::detectProDecoy(const string &proteinName)
 	for (string token : tokens)
 	{
 		if (token.substr(0, 4) != "Rev_")
-			return {tokens.size(), false};
+			return false;
 	}
-	return {tokens.size(), true};
+	return true;
 }
 
-void PSMsFiltrator::fillPSMinfo(PSMinfo &mPSMinfo, const sipPSM &psm, const int psmIX)
+void PSMsFiltrator::
+	sortPeptideBestScore(const unordered_map<string, PSMinfo> &mPepMap, vector<pair<float, bool>> &bestScoreDecoyPairs)
 {
-	for (size_t i = 0; i < 5; i++)
+	// convert unordered_map to vector of pairs
+	bestScoreDecoyPairs.clear();
+	bestScoreDecoyPairs.resize(mPepMap.size());
+	size_t i = 0;
+	for (auto &pepIX : mPepMap)
 	{
-		if (psm.scores[psmIX] > mPSMinfo.bestScores[i])
+		bestScoreDecoyPairs[i] = {pepIX.second.bestScore, pepIX.second.isDecoy};
+		i++;
+	}
+	// descending sort
+	sort(bestScoreDecoyPairs.begin(), bestScoreDecoyPairs.end(),
+		 [](const pair<float, bool> &a, const pair<float, bool> &b) -> bool
+		 {
+			 return a.first > b.first;
+		 });
+}
+
+void PSMsFiltrator::sortPeptideAllScore(const unordered_map<string, PSMinfo> &mPepMap, vector<pair<float, pair<string, bool>>> &scoreDecoyPairs)
+{
+	// convert unordered_map to vector of pairs
+	scoreDecoyPairs.clear();
+	for (auto pepIX : mPepMap)
+	{
+		for (float score : pepIX.second.scores)
 		{
-			mPSMinfo.bestScores[i] = psm.scores[psmIX];
-			mPSMinfo.calculatedParentMasses[i] = psm.calculatedParentMasses[psmIX];
-			mPSMinfo.identifiedPepSeqs[i] = psm.identifiedPeptides[psmIX];
-			tie(mPSMinfo.proCounts[i], mPSMinfo.isDecoys[i]) = detectProDecoy(psm.proteinNames[psmIX]);
-			mPSMinfo.measuredParentMasses[i] = psm.measuredParentMasses[psmIX];
-			mPSMinfo.originalPepSeqs[i] = psm.originalPeptides[psmIX];
-			mPSMinfo.parentCharges[i] = psm.parentCharges[psmIX];
-			mPSMinfo.searchNames[i] = psm.searchName;
-			mPSMinfo.proNames[i] = psm.proteinNames[psmIX];
-			mPSMinfo.pepLengths[i] = psm.originalPeptides[psmIX].length() - 4;
-			break;
+			scoreDecoyPairs.push_back({score, {pepIX.first, pepIX.second.isDecoy}});
 		}
 	}
+	// descending sort
+	sort(scoreDecoyPairs.begin(), scoreDecoyPairs.end(),
+		 [](const pair<float, pair<string, bool>> &a, const pair<float, pair<string, bool>> &b) -> bool
+		 {
+			 return a.first > b.first;
+		 });
 }
 
-void PSMsFiltrator::getRentionTime(string &workPath) {}
-void PSMsFiltrator::writePercolatorTSV() {}
-void PSMsFiltrator::readPercolatorTSV() {}
-void PSMsFiltrator::fillPeptidesCharge() {}
-void PSMsFiltrator::sortPeptideAllScore() {}
-
-tuple<size_t, size_t, float> PSMsFiltrator::getDecoyCountScoreThreshold()
+tuple<size_t, size_t, float> PSMsFiltrator::getDecoyCountScoreThreshold(vector<pair<float, bool>> &bestScoreDecoyPairs)
 {
+	size_t decoyCount = 0;
+	vector<float> FDRs(bestScoreDecoyPairs.size());
+	vector<int> decoyCounts(bestScoreDecoyPairs.size());
+	for (size_t i = 0; i < bestScoreDecoyPairs.size(); i++)
+	{
+		if (bestScoreDecoyPairs[i].second)
+			decoyCount++;
+		// must convert to float or double
+		FDRs[i] = decoyCount / (float)i;
+		decoyCounts[i] = decoyCount;
+	}
+	// find ScoreThreshold from end of FDRs
+	size_t i = FDRs.size();
+	while (i > 0)
+	{
+		i--;
+		if (FDRs[i] <= FDRthreshold)
+			return {decoyCounts[i], i, bestScoreDecoyPairs[i].first};
+	}
+	// if Cannot find FDRthreshold
+	cout << "Cannot find FDRthreshold" << endl;
 	return {0, 0, 0};
 }
 
-void PSMsFiltrator::filterPSMsMap() {}
-void PSMsFiltrator::precursorIsotopicMassesIntensities(string &workPath) {}
-void PSMsFiltrator::writeFilteredPSMs() {}
+tuple<size_t, size_t, float> PSMsFiltrator::getDecoyCountScoreThreshold(vector<pair<float, pair<string, bool>>> &scoreDecoyPairs)
+{
+	vector<int> pepCounts(scoreDecoyPairs.size());
+	vector<int> decoyCounts(scoreDecoyPairs.size());
+	unordered_set<string> pepSeqs;
+	unordered_set<string> decoySeqs;
+	vector<float> FDRs(scoreDecoyPairs.size());
+	size_t i = 0;
+	for (auto ix : scoreDecoyPairs)
+	{
+		pepSeqs.insert(ix.second.first);
+		if (ix.second.second)
+			decoySeqs.insert(ix.second.first);
+		pepCounts[i] = pepSeqs.size();
+		decoyCounts[i] = decoySeqs.size();
+		// must convert to float or double
+		FDRs[i] = decoySeqs.size() / (float)pepSeqs.size();
+		i++;
+	}
+	// find ScoreThreshold from end of FDRs
+	while (i > 0)
+	{
+		i--;
+		if (FDRs[i] <= FDRthreshold)
+			return {decoyCounts[i], pepCounts[i], scoreDecoyPairs[i].first};
+	}
+	// if Cannot find FDRthreshold
+	cout << "Cannot find FDRthreshold" << endl;
+	return {0, 0, 0};
+}
+
+void PSMsFiltrator::filterPeptideMap()
+{
+	// temp bestScoreDecoyPairs for sort
+	// vector<pair<float, bool>> bestScoreDecoyPairs;
+	// sortPeptideBestScore(peptideMapCharge2, bestScoreDecoyPairs);
+	// tie(decoyCountCharge2, pepCountCharge2, scoreThresholdCharge2) = getDecoyCountScoreThreshold(bestScoreDecoyPairs);
+	// sortPeptideBestScore(peptideMapCharge3, bestScoreDecoyPairs);
+	// tie(decoyCountCharge3, pepCountCharge3, scoreThresholdCharge3) = getDecoyCountScoreThreshold(bestScoreDecoyPairs);
+	// sortPeptideBestScore(peptideMapChargeLargerThan3, bestScoreDecoyPairs);
+	// tie(decoyCountChargeLargerThan3, pepCountChargeLargerThan3, scoreThresholdChargeLargerThan3) = getDecoyCountScoreThreshold(bestScoreDecoyPairs);
+
+	vector<pair<float, pair<string, bool>>> scoreDecoyPairs;
+	sortPeptideAllScore(peptideMapCharge2, scoreDecoyPairs);
+	tie(decoyCountCharge2, pepCountCharge2, scoreThresholdCharge2) = getDecoyCountScoreThreshold(scoreDecoyPairs);
+	sortPeptideAllScore(peptideMapCharge3, scoreDecoyPairs);
+	tie(decoyCountCharge3, pepCountCharge3, scoreThresholdCharge3) = getDecoyCountScoreThreshold(scoreDecoyPairs);
+	sortPeptideAllScore(peptideMapChargeLargerThan3, scoreDecoyPairs);
+	tie(decoyCountChargeLargerThan3, pepCountChargeLargerThan3, scoreThresholdChargeLargerThan3) = getDecoyCountScoreThreshold(scoreDecoyPairs);
+}
+
+void PSMsFiltrator::fillPeptideMapExtraInfo()
+{
+}

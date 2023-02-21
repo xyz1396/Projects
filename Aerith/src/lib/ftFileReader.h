@@ -21,10 +21,10 @@ struct alignas(64) Scan
 	double precursorMz;
 	int precursorCharge;
 
-	// only orbit trap scan has follows
+	// only orbitrap scan has follows
 	vector<int> resolution;
 	vector<float> baseLine;
-	vector<float> noise;
+	vector<float> signalToNoise;
 	vector<int> charge;
 
 	Scan();
@@ -45,8 +45,11 @@ public:
 	bool continueRead;
 	bool hasPrecursor;
 	bool hasCharge;
+	// avoid empty file
+	bool isEmpty = false;
 	string instrument;
 	string scanType;
+	string scanFilter;
 	Scan currentScan;
 	vector<Scan> Scans;
 	vector<string> tokens;

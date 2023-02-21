@@ -24,6 +24,7 @@ inline void computeResidueMassIntensityAgain(const string Atom_str, double Prob_
 			1.0 - Prob_d;
 		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[0].vProb[1] =
 			Prob_d;
+		ProNovoConfig::getSetSIPelement() = "C";
 	}
 	else if (Atom_str == "N15")
 	{
@@ -31,6 +32,7 @@ inline void computeResidueMassIntensityAgain(const string Atom_str, double Prob_
 			1.0 - Prob_d;
 		ProNovoConfig::configIsotopologue.vAtomIsotopicDistribution[3].vProb[1] =
 			Prob_d;
+		ProNovoConfig::getSetSIPelement() = "N";
 	}
 	else
 		Rcerr << "this element is not support" << endl;

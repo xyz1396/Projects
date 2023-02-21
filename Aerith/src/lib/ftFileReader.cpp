@@ -30,11 +30,13 @@ ftFileReader::ftFileReader(string file) : ftFileName(file)
 		ftFileStream.open(ftFileName.c_str(), ios::in);
 		if (!ftFileStream.is_open())
 		{
+			isEmpty = true;
 			cout << "Cannot open " << ftFileName << endl;
 		}
 	}
 	else
 	{
+		isEmpty = true;
 		cout << ftFileName << " does not exists" << endl;
 	}
 }
@@ -73,11 +75,15 @@ bool ftFileReader::detectPrecursorAndCharge()
 		{
 			scanType = tokens[2];
 		}
+		else if (tokens[1] == "ScanFilter")
+		{
+			scanFilter = tokens[2];
+		}
 		else if (tokens[1] == "ParentScanNumber")
 			hasPrecursor = true;
 		getline(ftFileStream, currentLine);
 	}
-	// return to beginning
+	// return to beginning of line of first peak
 	ftFileStream.seekg(0);
 	splitString(currentLine);
 	if (tokens.size() == 2)
@@ -178,7 +184,7 @@ void ftFileReader::readPeakCharge()
 				currentScan.intensity.push_back(stod(tokens[1]));
 				currentScan.resolution.push_back(stoi(tokens[2]));
 				currentScan.baseLine.push_back(stof(tokens[3]));
-				currentScan.noise.push_back(stof(tokens[4]));
+				currentScan.signalToNoise.push_back(stof(tokens[4]));
 				currentScan.charge.push_back(stoi(tokens[5]));
 			}
 			else
@@ -187,7 +193,7 @@ void ftFileReader::readPeakCharge()
 				currentScan.intensity.push_back(stod(tokens[1]));
 				currentScan.resolution.push_back(0);
 				currentScan.baseLine.push_back(0);
-				currentScan.noise.push_back(0);
+				currentScan.signalToNoise.push_back(0);
 				currentScan.charge.push_back(0);
 			}
 		}

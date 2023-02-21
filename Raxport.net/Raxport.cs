@@ -69,8 +69,9 @@ namespace Raxport
                 LabelPeak[] peaks = currentScan.CentroidScan.GetLabelPeaks();
                 foreach (LabelPeak peak in peaks)
                 {
+                    // SignalToNoise is peak.Noise in old V3 version
                     writer.WriteLine("{0:F6}\t{1:F2}\t{2:F0}\t{3:F2}\t{4:F2}\t{5:F0}",
-                        peak.Mass, peak.Intensity, peak.Resolution, peak.Baseline, peak.Noise, peak.Charge);
+                        peak.Mass, peak.Intensity, peak.Resolution, peak.Baseline, peak.SignalToNoise, peak.Charge);
                 }
             }
             else
@@ -91,9 +92,9 @@ namespace Raxport
         }
         public void writeFT2Scan(Scan FT2Scan)
         {
-            // for old sipros V3 format
-            // FT2writer.WriteLine("S\t{0:D}\t{0:D}\t{1:F6}\t{2:F2}",
-            FT2writer.WriteLine("S\t{0:D}\t{1:F6}\t{2:F2}",
+            // for old sipros V3 format, currentScanNumber repeats once in old version
+            FT2writer.WriteLine("S\t{0:D}\t{0:D}\t{1:F6}\t{2:F2}",
+            // FT2writer.WriteLine("S\t{0:D}\t{1:F6}\t{2:F2}",
                 currentScanNumber, currentReaction.PrecursorMass, currentScan.ScanStatistics.TIC);
             var trailerLabels = rawFile.GetTrailerExtraInformation(currentScanNumber);
             object chargeState = 0;
@@ -109,7 +110,9 @@ namespace Raxport
             FT2writer.WriteLine("Z\t{0:D}\t{1:F6}",
                 chargeStateInt, chargeStateInt * currentReaction.PrecursorMass);
             FT2writer.WriteLine("I\tRetentionTime\t{0:F6}", rawFile.RetentionTimeFromScanNumber(currentScanNumber));
-            FT2writer.WriteLine("I\tScanType\t" + currentFilter.MSOrder + " @ " + currentFilter.GetActivation(0));
+            // for old sipros V3 format, add " X X" because in old formt this line has 7 chunks
+            FT2writer.WriteLine("I\tScanType\t" + currentFilter.MSOrder + " @ " + currentFilter.GetActivation(0) + " X X");
+            // FT2writer.WriteLine("I\tScanType\t" + currentFilter.MSOrder + " @ " + currentFilter.GetActivation(0));
             FT2writer.WriteLine("I\tScanFilter\t" + currentFilter.ToString());
             FT2writer.WriteLine("D\tParentScanNumber\t{0:D}", currentPrecusorScanNumber);
             writePeak(FT2writer);
@@ -152,6 +155,7 @@ namespace Raxport
         static string[] rawFiles;
         static string inPath;
         static string outPath;
+        static int threads = 6;
         public static void stopNoCloseWindow()
         {
             // Console.WriteLine("Press any key to exit");
@@ -163,8 +167,8 @@ namespace Raxport
             bool rValue = false;
             inPath = Directory.GetCurrentDirectory();
             outPath = inPath;
-            string help = "On windows: Raxport.exe -i 'input path' -o 'output path'\n" +
-                "On linux: mono Raxport.exe -i 'input path' -o 'output path'\n" +
+            string help = "On windows: Raxport.exe -i 'input path' -o 'output path -j 'threads number'\n" +
+                "On linux: mono Raxport.exe -i 'input path' -o 'output path' -j 'threads number'\n" +
                 "Default path is ./";
             for (int i = 0; i < args.Length; i++)
             {
@@ -172,6 +176,8 @@ namespace Raxport
                     inPath = args[++i];
                 else if (args[i] == "-o")
                     outPath = args[++i];
+                else if (args[i] == "-j")
+                    Int32.TryParse(args[++i], out threads);
                 else if (args[i] == "-h")
                 {
                     Console.WriteLine(help);
@@ -206,11 +212,11 @@ namespace Raxport
         {
             if (parseArgs(args))
             {
-                Parallel.ForEach(rawFiles, (rawFile) =>
-                  {
-                      FTwriter writer = new FTwriter(rawFile, outPath);
-                      writer.write();
-                  });
+                Parallel.ForEach(rawFiles, new ParallelOptions { MaxDegreeOfParallelism = threads }, (rawFile) =>
+                   {
+                       FTwriter writer = new FTwriter(rawFile, outPath);
+                       writer.write();
+                   });
                 Console.WriteLine("All convert finished");
             }
             stopNoCloseWindow();

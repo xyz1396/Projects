@@ -10,6 +10,15 @@
 namespace fs = std::filesystem;
 using namespace std;
 
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
+}
+
 class cfgParser
 {
 private:
@@ -33,6 +42,6 @@ public:
     void setElement_PercentIX(const string &element);
     void changeSearchName(const string &nameSuffix);
     void changeMassWindowsCenter(const int center, const int windowsSize);
-    void changeSIPabundance(const int sipAbundance);
+    void changeSIPabundance(const double sipAbundance);
     void writeFile(const string &folderPath);
 };

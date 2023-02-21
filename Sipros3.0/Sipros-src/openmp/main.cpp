@@ -6,6 +6,10 @@
 #include "proNovoConfig.h"
 #include "ms2scanvector.h"
 
+#ifdef Gper
+#include "gperftools/profiler.h"
+#endif
+
 using namespace std;
 
 void searchFT2Files(vector<string> &vsFT2Filenames, const string &sWorkingDirectory, bool bScreenOutput)
@@ -115,16 +119,19 @@ void handleScan(const string &sFT2filename, const string &sOutputDirectory, cons
 
 int main(int argc, char **argv)
 {
-    // #pragma omp parallel
-    //     {
-    //         int tid = omp_get_thread_num();
-    //         if (tid == 0)
-    //         {
-    //             int nthreads = omp_get_num_threads();
-    //             cout << "thread " << nthreads << endl;
-    //         }
-    //     }
-    
+#ifdef Gper
+    ProfilerStart("test_capture.prof");
+#pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        if (tid == 0)
+        {
+            int nthreads = omp_get_num_threads();
+            cout << "thread " << nthreads << endl;
+        }
+    }
+#endif
+
     // A list of FT2/MS2 files to be searched
     vector<string> vsFT2Filenames;
     bool bScreenOutput;
@@ -146,4 +153,7 @@ int main(int argc, char **argv)
 
     //std::cout << "Hello, world!" << std::endl;
     return 0;
+#ifdef Gper
+    ProfilerStop();
+#endif
 }

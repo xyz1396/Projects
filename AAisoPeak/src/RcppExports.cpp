@@ -10,17 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// getUnfilteredPSMs
-DataFrame getUnfilteredPSMs(CharacterVector workingPath);
-RcppExport SEXP _AAisoPeak_getUnfilteredPSMs(SEXP workingPathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type workingPath(workingPathSEXP);
-    rcpp_result_gen = Rcpp::wrap(getUnfilteredPSMs(workingPath));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getUnfilteredPeptides
 DataFrame getUnfilteredPeptides(CharacterVector workingPath);
 RcppExport SEXP _AAisoPeak_getUnfilteredPeptides(SEXP workingPathSEXP) {
@@ -44,40 +33,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// precursor_peak_calculator
-DataFrame precursor_peak_calculator(CharacterVector AAstr);
-RcppExport SEXP _AAisoPeak_precursor_peak_calculator(SEXP AAstrSEXP) {
+// peak_calculator
+DataFrame peak_calculator(CharacterVector AAstr);
+RcppExport SEXP _AAisoPeak_peak_calculator(SEXP AAstrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type AAstr(AAstrSEXP);
-    rcpp_result_gen = Rcpp::wrap(precursor_peak_calculator(AAstr));
+    rcpp_result_gen = Rcpp::wrap(peak_calculator(AAstr));
     return rcpp_result_gen;
 END_RCPP
 }
-// precursor_peak_calculator_DIY
-DataFrame precursor_peak_calculator_DIY(CharacterVector AAstr, CharacterVector Atom, NumericVector Prob);
-RcppExport SEXP _AAisoPeak_precursor_peak_calculator_DIY(SEXP AAstrSEXP, SEXP AtomSEXP, SEXP ProbSEXP) {
+// peak_calculator_DIY
+DataFrame peak_calculator_DIY(CharacterVector AAstr, CharacterVector Atom, NumericVector Prob);
+RcppExport SEXP _AAisoPeak_peak_calculator_DIY(SEXP AAstrSEXP, SEXP AtomSEXP, SEXP ProbSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type AAstr(AAstrSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type Atom(AtomSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Prob(ProbSEXP);
-    rcpp_result_gen = Rcpp::wrap(precursor_peak_calculator_DIY(AAstr, Atom, Prob));
-    return rcpp_result_gen;
-END_RCPP
-}
-// BYion_peak_calculator_DIY
-DataFrame BYion_peak_calculator_DIY(CharacterVector AAstr, CharacterVector Atom, NumericVector Prob);
-RcppExport SEXP _AAisoPeak_BYion_peak_calculator_DIY(SEXP AAstrSEXP, SEXP AtomSEXP, SEXP ProbSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type AAstr(AAstrSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type Atom(AtomSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Prob(ProbSEXP);
-    rcpp_result_gen = Rcpp::wrap(BYion_peak_calculator_DIY(AAstr, Atom, Prob));
+    rcpp_result_gen = Rcpp::wrap(peak_calculator_DIY(AAstr, Atom, Prob));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -196,12 +172,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_AAisoPeak_getUnfilteredPSMs", (DL_FUNC) &_AAisoPeak_getUnfilteredPSMs, 1},
     {"_AAisoPeak_getUnfilteredPeptides", (DL_FUNC) &_AAisoPeak_getUnfilteredPeptides, 1},
     {"_AAisoPeak_getFilterThreshold", (DL_FUNC) &_AAisoPeak_getFilterThreshold, 2},
-    {"_AAisoPeak_precursor_peak_calculator", (DL_FUNC) &_AAisoPeak_precursor_peak_calculator, 1},
-    {"_AAisoPeak_precursor_peak_calculator_DIY", (DL_FUNC) &_AAisoPeak_precursor_peak_calculator_DIY, 3},
-    {"_AAisoPeak_BYion_peak_calculator_DIY", (DL_FUNC) &_AAisoPeak_BYion_peak_calculator_DIY, 3},
+    {"_AAisoPeak_peak_calculator", (DL_FUNC) &_AAisoPeak_peak_calculator, 1},
+    {"_AAisoPeak_peak_calculator_DIY", (DL_FUNC) &_AAisoPeak_peak_calculator_DIY, 3},
     {"_AAisoPeak_readOneScanMS2", (DL_FUNC) &_AAisoPeak_readOneScanMS2, 2},
     {"_AAisoPeak_readOneScanMS1", (DL_FUNC) &_AAisoPeak_readOneScanMS1, 2},
     {"_AAisoPeak_readScansMS1", (DL_FUNC) &_AAisoPeak_readScansMS1, 2},
